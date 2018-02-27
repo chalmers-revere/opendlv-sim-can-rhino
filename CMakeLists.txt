@@ -69,12 +69,6 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/opendlv-standard-message-set.cpp
     COMMAND ${CMAKE_BINARY_DIR}/cluon-msc --cpp-headers --out=${CMAKE_BINARY_DIR}/opendlv-standard-message-set.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/${OPENDLV_STANDARD_MESSAGE_SET}
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/${OPENDLV_STANDARD_MESSAGE_SET} ${CMAKE_BINARY_DIR}/cluon-msc)
 
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pos-message-set.cpp
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND ${CMAKE_BINARY_DIR}/cluon-msc --cpp-sources --cpp-add-include-file=pos-message-set.hpp --out=${CMAKE_BINARY_DIR}/pos-message-set.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/pos-message-set.odvd
-    COMMAND ${CMAKE_BINARY_DIR}/cluon-msc --cpp-headers --out=${CMAKE_BINARY_DIR}/pos-message-set.hpp ${CMAKE_CURRENT_SOURCE_DIR}/src/pos-message-set.odvd
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/pos-message-set.odvd ${CMAKE_BINARY_DIR}/cluon-msc)
-
 # Add current build directory as include directory as it contains generated files.
 include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
