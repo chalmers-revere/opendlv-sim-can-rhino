@@ -10,17 +10,8 @@
 
 //other header files
 
-#include <memory>
 #include <string>
 
-
-namespace opendlv {
-namespace sim {
-namespace rhino {
-
-class dynamics{
-public:
-	dynamics();
 
 	typedef struct
 	{
@@ -51,6 +42,13 @@ public:
 		double B_ped;  //brake
 		double steering_angle;
 	} input_vehicle;
+
+
+class dynamics{
+public:
+	dynamics(input_vehicle input_global1);
+
+
 
 
 	//the functions:
@@ -170,9 +168,5 @@ private:
 
 };
 
-
-}
-}
-}
-
 #endif /* DYNAMICS_VEHICLE_H_ */
+
