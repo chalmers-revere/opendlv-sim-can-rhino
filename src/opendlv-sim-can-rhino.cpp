@@ -224,6 +224,8 @@ PI (3.14159265),
 
 
 
+
+
 void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double t_sim, diff_vehicle &out){
 	//the differential equation of all the dynamics
 
@@ -282,23 +284,19 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 	double sy[2];
 	double sxy[2];
 
-	/*double delta[2];  //the steering angle
+	double delta[2];  //the steering angle
 	delta[0] = steering_angle;
-	delta[1] = 0; */
+	delta[1] = 0;
 	for (i=0; i<2; i++){
-		/*vb_wheel[0][i] = v_body[0]*cos(delta[i]) + v_body[1] * sin(delta[i]);
-		vb_wheel[1][i] = -v_body[0]*sin(delta[i]) + v_body[1] * cos(delta[i]); */
-
-		vb_wheel[0][i] = 0;
-		vb_wheel[1][i] = steering_angle;
+		vb_wheel[0][i] = v_body[0]*cos(delta[i]) + v_body[1] * sin(delta[i]);
+		vb_wheel[1][i] = -v_body[0]*sin(delta[i]) + v_body[1] * cos(delta[i]);
 
 		sx[i] = -(vb_wheel[0][i] - rw[i] * omega_w[i] ) / max_dynamics(abs_dynamics(rw[i]*omega_w[i]), 0.01);
 		sy[i] = -(vb_wheel[1][i] ) / max_dynamics(abs_dynamics(rw[i]*omega_w[i]), 0.01);
-		//sxy[i] = sqrt(sx[i]*sx[i] + sy[i]*sy[i]);
-		sxy[i] = 0; 
+		sxy[i] = sqrt(sx[i]*sx[i] + sy[i]*sy[i]);
 
-		//f_sxy[i] = 2/PI*atan(2*cp*sxy[i]/PI);
-		//Fz[i] = mass*g*cos(theta_g)/2;
+		f_sxy[i] = 2/PI*atan(2*cp*sxy[i]/PI);
+		Fz[i] = mass*g*cos(theta_g)/2;
 		Fxy[i] = mu*Fz[i]*f_sxy[i];
 //		Fw[0][i] =(rw[i]*omega_w[i] - vb_wheel[0][i])*Fxy[i] / sqrt((rw[i]*omega_w[i] - vb_wheel[0][i])*(rw[i]*omega_w[i]
 //		             - vb_wheel[0][i]) + vb_wheel[1][i] * vb_wheel[1][i]);
@@ -319,10 +317,8 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 		//T_roll[i] = 0;  //test
 
 		//force actuated on body, body frame
-		//Fv[0][i] = cos(delta[i]) * Fw[0][i] - sin(delta[i])*Fw[1][i];
-		//Fv[1][i] = sin(delta[i]) * Fw[0][i] + cos(delta[i])*Fw[1][i];
-                Fv[0][i] = 1;
-		Fv[1][i] = 1;
+		Fv[0][i] = cos(delta[i]) * Fw[0][i] - sin(delta[i])*Fw[1][i];
+		Fv[1][i] = sin(delta[i]) * Fw[0][i] + cos(delta[i])*Fw[1][i];
 	}
 
 	//brake for XC90:
@@ -351,18 +347,15 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 	//x direction, body frame
 	if(v_body[0] > 0.00){
 		F_d[0] = 0.5*rou*C_d*A*v_body[0]*v_body[0];
-		//F_g[0] = mass*g*sin(theta_g);
-F_g[0] =1;
+		F_g[0] = mass*g*sin(theta_g);
 	}
 	else if(v_body[0] < -0.00){
 		F_d[0] = -0.5*rou*C_d*A*v_body[0]*v_body[0];
-		//F_g[0] = mass*g*sin(theta_g);
-F_g[0] =1;
+		F_g[0] = mass*g*sin(theta_g);
 	}
 	else{
 		F_d[0] = 0;
-		//F_g[0] = mass*g*sin(theta_g);
-F_g[0] =1;
+		F_g[0] = mass*g*sin(theta_g);
 	}
 	Fx = Fv[0][0] + Fv[0][1] - F_d[0] -F_g[0];
 
@@ -372,8 +365,6 @@ F_g[0] =1;
 	//y direction, body frame
 //	F_d[1] = 0.5*rou*C_d*A*v_body[1]*v_body[1];
 //	F_g[1] = mass*g*sin(theta_g);
-F_d[1] = 1;
- 	F_g[1] = 1;
 //	Fy = Fv[1][0]+Fv[1][1] - F_d[1] -F_g[1];
 	Fy = Fv[1][0] + Fv[1][1];
 
@@ -655,6 +646,8 @@ F_d[1] = 1;
 
 
 }
+
+
 
 
 void dynamics::integrator(void){
