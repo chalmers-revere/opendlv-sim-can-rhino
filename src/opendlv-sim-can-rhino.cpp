@@ -28,33 +28,99 @@
 
 int32_t main(int32_t argc, char **argv) { 
     dynamics m_dynamics;    
-    int32_t retCode{0};	
+    int32_t retCode{0};
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
-    if (0 == commandlineArguments.count("cid")) {
+    if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq"))) {
         std::cerr << argv[0] << " simulates can-rhino." << std::endl;
-        std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=111" << std::endl;
+        std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --cid=111 --freq=50" << std::endl;
         retCode = 1;
     } else {
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
+        const int16_t FREQ = static_cast<uint16_t>(std::stoi(commandlineArguments["freq"]));
 
         (void)ID;
-        (void)VERBOSE;
+//        (void)VERBOSE;
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
         cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
-            [](auto){}
+            [&m_dynamics](auto){}
         };
 
-        // Just sleep as this microservice is data driven.
+        // Define data triggered lambda functions
+        auto Input_Pedal{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+            {
+                std::cout << "Now in lambda func. of Input_Pedal..." << std::endl;
+                opendlv::proxy::PedalPositionRequest ppr = cluon::extractMessage<opendlv::proxy::PedalPositionRequest>(std::move(env));
+                if (ppr.position() > 0.0f)
+                {
+                    m_dynamics.SetAcceleratorPedalPosition((double)ppr.position() * 100);
+                    m_dynamics.SetBrakePedalPosition(0.0);
+                    if (VERBOSE) std::cout << "Acc pedal request received: " << ppr.position() << std::endl;
+                } else {
+                    m_dynamics.SetAcceleratorPedalPosition(0.0);
+                    m_dynamics.SetBrakePedalPosition((double)ppr.position() * 100);
+                    if (VERBOSE) std::cout << "Break pedal request received: " << ppr.position() << std::endl;
+                }
+            }
+        };
+
+        auto Input_Steer{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+            {
+                opendlv::proxy::GroundSteeringRequest gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
+                m_dynamics.SetRoadWheelAngle((double)gsr.groundSteering() / 180 * m_dynamics.PI);
+                if (VERBOSE) std::cout << "Steering request received: " << gsr.groundSteering() << " (degree)" << std::endl;
+            }
+        };
+
+        if (od4.isRunning())
+        {
+            od4.dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
+            od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
+            std::cout << "Data triggered functions attributed." << std::endl;
+        }
+
+        // Define time triggered lambda function
+        auto Output{[&od4, &m_dynamics, &FREQ, &VERBOSE]() -> bool
+            {
+                uint16_t inner_freq = 1000 / FREQ;
+                m_dynamics.T_samp = 0.001;  //sampling time
+                for(uint16_t i = 0; i < inner_freq; i++)
+                {
+                    m_dynamics.integrator(VERBOSE);
+                }
+
+                opendlv::sim::KinematicState kinematicMsg;
+                kinematicMsg.vx((float)m_dynamics.GetLongitudinalVelocity());
+                kinematicMsg.vy((float)m_dynamics.GetLateralVelocity());
+                kinematicMsg.vz(0.0f);
+                kinematicMsg.rollRate(0.0f);
+                kinematicMsg.pitchRate(0.0f);
+                kinematicMsg.yawRate((float)m_dynamics.GetYawVelocity());
+                od4.send(kinematicMsg);
+
+                if (VERBOSE) std::cout << "Current Kinematic states sent." << std::endl;
+                return false;
+
+            }// end of lambda function
+        }; // end of Output definition
+
+
+
+        if (od4.isRunning())
+        {
+            od4.timeTrigger(FREQ, Output);
+            std::cout << "Time triggered functions attributed." << std::endl;
+        }        
+
+
         using namespace std::literals::chrono_literals;
         while (od4.isRunning()) {
-            std::this_thread::sleep_for(1s); 
-            m_dynamics.T_samp = 0.001;  //sampling time 
-            m_dynamics.integrator();
+            std::this_thread::sleep_for(0.1s); // Commented as it is no longer simply data driven
+//            std::cout << "Running..." << std::endl;
         }
-    }
+    } // end of else (arguments check)
     return retCode;
 }
 
@@ -583,8 +649,8 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 //         << "	sy[0]:" << sy[0]
 //           << "	sy[1]:" << sy[1] << std::endl;
 //
-	std::cerr  << "Te: " << Te << "	Temx: " << T_emax << "  Engine speed: " << omega_e
-			<<"  speed f: " << omega_f<<std::endl;
+//	std::cerr  << "Te: " << Te << "	Temx: " << T_emax << "  Engine speed: " << omega_e
+//			<<"  speed f: " << omega_f<<std::endl;
 //
 //	std::cerr << "T_emax:" << T_emax << std::endl;
 //
@@ -601,7 +667,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 
 
 
-void dynamics::integrator(void){
+void dynamics::integrator(bool verbose){
 
 	//update stete:
 	int flag = 0;
@@ -704,20 +770,25 @@ void dynamics::integrator(void){
 	//agear
 	agear = agear_diff + agear;
 
- 	std::cerr << "angular velocity of wheel: " << state_global.omega_w[0]  << "," <<  state_global.omega_w[1] << std::endl;
-////	std::cerr << "angular acc of wheel:  " << diff_global.omega_wheel_dot[0] << ","  << diff_global.omega_wheel_dot[1] << std::endl;
-//
-	std::cerr << "body velocity (x, y, rot z): " << state_global.v_body[0] << ","
-			<< state_global.v_body[1] << "," << state_global.omega_body[2] << std::endl;
-////	std::cerr << "body acc (x, y, rot z): " << diff_global.vb_dot[0]  << ","
-////			<< diff_global.vb_dot[1]  << "," << diff_global.omegab_dot[2] << std::endl;
-//
-	std::cerr << "i_gear: " << i_gear
-<< "	a_gear: " << agear << "	diff_gear: " << agear_diff << std::endl;
+    if (verbose && false)
+    {
+        std::cerr << "angular velocity of wheel: " << state_global.omega_w[0]  << "," <<  state_global.omega_w[1] << std::endl;
+    ////    std::cerr << "angular acc of wheel:  " << diff_global.omega_wheel_dot[0] << ","  << diff_global.omega_wheel_dot[1] << std::endl;
+    //
+        std::cerr << "body velocity (x, y, rot z): " << state_global.v_body[0] << ","
+                << state_global.v_body[1] << "," << state_global.omega_body[2] << std::endl;
+    ////    std::cerr << "body acc (x, y, rot z): " << diff_global.vb_dot[0]  << ","
+    ////            << diff_global.vb_dot[1]  << "," << diff_global.omegab_dot[2] << std::endl;
+    //
+        std::cerr << "i_gear: " << i_gear
+    << "    a_gear: " << agear << " diff_gear: " << agear_diff << std::endl;
 
-	std::cerr << "Time: "   << T_global << std::endl;
+        std::cerr << "Time: "   << T_global << std::endl;
 
-    std::cerr << std::endl;
+        std::cerr << std::endl;
+    }
+
+
 
 }
 

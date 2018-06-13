@@ -48,7 +48,7 @@ public:
 	dynamics();
 	//the functions:
 	void diff_equation(state_vehicle &x, input_vehicle &u,  double t, diff_vehicle &out);
-	void integrator(void);
+	void integrator(bool);
 	double max_dynamics(double a, double b);
 	double min_dynamics(double a, double b);
 	double abs_dynamics(double a);
