@@ -40,7 +40,7 @@ typedef struct
 	double A_ped;   //pedal
 	double B_ped;  //brake
 	double steering_angle;
-} input_vehicle;
+} input_vehicle; // Utilised for receiving messages as input
 
 
 class dynamics{
