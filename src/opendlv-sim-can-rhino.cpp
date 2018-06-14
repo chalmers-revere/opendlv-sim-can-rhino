@@ -171,9 +171,9 @@ T_samp ( 0.001),
 T_global ( 0),
 agear ( 6),
 agear_diff ( 0),
+MAX_STEERING( 0.785398), // PI/4, 90 degree
 omega_e ( 0),
-Te ( 0),
-MAX_STEERING( 0.785398) // PI/4, 90 degree
+Te ( 0)
 {
 	///////////////////the parameters of the vehicle//////////////////////
 
@@ -200,8 +200,6 @@ MAX_STEERING( 0.785398) // PI/4, 90 degree
 	Efactor = 0.5; ////fh16
 
 	i_final = 3.46;  //FH16
-
-    MAX_STEERING = PI / 4;
 
 	//fh16:
 	i_tm[0] = 11.73; //gear ration for each gear
@@ -280,6 +278,8 @@ MAX_STEERING( 0.785398) // PI/4, 90 degree
 
 	agear = 6;
 	agear_diff = 0;
+
+    MAX_STEERING = PI / 4;
 
 	omega_e = 0;
  	Te = 0;

@@ -101,9 +101,6 @@ public:
 	double Izz;
 	double Je;
 
-    //Maximum steering angle
-    double MAX_STEERING;
-
 	//the fraction by which the engine torque is reduced
 	double Efactor;
 
@@ -134,6 +131,9 @@ public:
 
 	int agear;
 	int agear_diff;
+
+    //Maximum steering angle
+    double MAX_STEERING;
 
 private:
 	double omega_e;
