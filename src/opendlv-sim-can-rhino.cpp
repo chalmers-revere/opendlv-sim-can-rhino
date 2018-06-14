@@ -44,14 +44,16 @@ int32_t main(int32_t argc, char **argv) {
 //        (void)VERBOSE;
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
-        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
-            [&m_dynamics](auto){}
-        };
+//        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
+//            [&m_dynamics](auto){}
+//        };
+        uint16_t argCID = static_cast<uint16_t>(std::stoi(commandlineArguments["cid"]));
+        std::shared_ptr<cluon::OD4Session> od4 = std::shared_ptr<cluon::OD4Session>(new cluon::OD4Session(argCID));
 
         // Define data triggered lambda functions
         auto Input_Pedal{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
             {
-                std::cout << "Now in lambda func. of Input_Pedal..." << std::endl;
+                // std::cout << "Now in lambda func. of Input_Pedal..." << std::endl;
                 opendlv::proxy::PedalPositionRequest ppr = cluon::extractMessage<opendlv::proxy::PedalPositionRequest>(std::move(env));
                 if (ppr.position() > 0.0f)
                 {
@@ -74,15 +76,15 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
-        if (od4.isRunning())
+        if (od4->isRunning())
         {
-            od4.dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
-            od4.dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
-            std::cout << "Data triggered functions attributed." << std::endl;
+            od4->dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
+            od4->dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
+//            std::cout << "Data triggered functions attributed." << std::endl;
         }
 
         // Define time triggered lambda function
-        auto Output{[&od4, &m_dynamics, &FREQ, &VERBOSE]() -> bool
+        auto Output{[od4, &m_dynamics, &FREQ, &VERBOSE]() -> bool
             {
                 uint16_t inner_freq = 1000 / FREQ;
                 m_dynamics.T_samp = 0.001;  //sampling time
@@ -98,7 +100,7 @@ int32_t main(int32_t argc, char **argv) {
                 kinematicMsg.rollRate(0.0f);
                 kinematicMsg.pitchRate(0.0f);
                 kinematicMsg.yawRate((float)m_dynamics.GetYawVelocity());
-                od4.send(kinematicMsg);
+                od4->send(kinematicMsg);
 
                 if (VERBOSE) std::cout << "Current Kinematic states sent." << std::endl;
                 return false;
@@ -108,16 +110,17 @@ int32_t main(int32_t argc, char **argv) {
 
 
 
-        if (od4.isRunning())
-        {
-            od4.timeTrigger(FREQ, Output);
-            std::cout << "Time triggered functions attributed." << std::endl;
-        }        
+//        if (od4->isRunning())
+//        {
+//            od4->timeTrigger(FREQ, Output);
+//            std::cout << "Time triggered functions attributed." << std::endl;
+//        }        
 
 
         using namespace std::literals::chrono_literals;
-        while (od4.isRunning()) {
-            std::this_thread::sleep_for(0.1s); // Commented as it is no longer simply data driven
+        while (od4->isRunning()) {
+            od4->timeTrigger(FREQ, Output);
+//            std::this_thread::sleep_for(0.1s); // Commented as it is no longer simply data driven
 //            std::cout << "Running..." << std::endl;
         }
     } // end of else (arguments check)
