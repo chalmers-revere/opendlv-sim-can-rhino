@@ -101,6 +101,9 @@ public:
 	double Izz;
 	double Je;
 
+    //Maximum steering angle
+    double MAX_STEERING;
+
 	//the fraction by which the engine torque is reduced
 	double Efactor;
 

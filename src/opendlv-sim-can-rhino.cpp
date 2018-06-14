@@ -71,8 +71,22 @@ int32_t main(int32_t argc, char **argv) {
         auto Input_Steer{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
             {
                 opendlv::proxy::GroundSteeringRequest gsr = cluon::extractMessage<opendlv::proxy::GroundSteeringRequest>(std::move(env));
-                m_dynamics.SetRoadWheelAngle((double)gsr.groundSteering() / 180 * m_dynamics.PI);
-                if (VERBOSE) std::cout << "Steering request received: " << gsr.groundSteering() << " (degree)" << std::endl;
+                if (VERBOSE) std::cout << "Steering request received: " << gsr.groundSteering() << " (percentage)" << std::endl;
+                if (gsr.groundSteering() > 1)
+                {
+                    std::cerr << "WARNING: Right steering limit reached. Using max angle instead." << std::endl;
+                    m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING);
+                }
+                else if (gsr.groundSteering() < -1)
+                {
+                    std::cerr << "WARNING: Left steering limit reached. Using max angle instead." << std::endl;
+                    m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING * (-1));
+                }
+                else
+                {
+                    double angle = (double)gsr.groundSteering() * m_dynamics.MAX_STEERING;
+                    m_dynamics.SetRoadWheelAngle(angle);
+                }
             }
         };
 
@@ -158,7 +172,8 @@ T_global ( 0),
 agear ( 6),
 agear_diff ( 0),
 omega_e ( 0),
-Te ( 0)
+Te ( 0),
+MAX_STEERING( 0.785398) // PI/4, 90 degree
 {
 	///////////////////the parameters of the vehicle//////////////////////
 
@@ -185,6 +200,8 @@ Te ( 0)
 	Efactor = 0.5; ////fh16
 
 	i_final = 3.46;  //FH16
+
+    MAX_STEERING = PI / 4;
 
 	//fh16:
 	i_tm[0] = 11.73; //gear ration for each gear
