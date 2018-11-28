@@ -143,9 +143,9 @@ int32_t main(int32_t argc, char **argv) {
 
 
 dynamics::dynamics():
-state_global({{0,0,0},{0,0,0},{0,0},0,0,0}),
-diff_global({{0,0,0},{0,0,0},{0,0},0,0,0}),
-input_global({0,0,0}),
+state_global({{0,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
+diff_global({{0,0,0},{0,0,0},{0,0},0,0,0,0,0,0}),
+input_global({0,0,0,0}),
 PI (3.14159265),
 cp ( 20),  //parameter of cornering stiffness
 mu ( 0.9),   //friction coefficient
@@ -157,6 +157,13 @@ lf ( 1.68),  //FH16
 lr ( 1.715),   //FH16
 Izz ( 41340),  //FH16
 Je ( 4),  //flywheel inertia, FH16
+a(1.68),
+b(1.715),
+cf (3.4812e+05),
+cr (3.5537e+05),
+m (9840),
+Iz (41340),
+psi_dot_com ( 0),
 Efactor ( 0.5), ////fh16
 i_final ( 3.46),  //FH16
 i_gear(11.73),
@@ -292,29 +299,32 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 	//the differential equation of all the dynamics
 
 	(void) t_sim;
-	int i = 0;
+        //int i = 0;
 	//input:
 
-	double A_ped = input.A_ped;   //pedal
-	double B_ped = input.B_ped;  //brake
+        //double A_ped = input.A_ped;   //pedal
+        //double B_ped = input.B_ped;  //brake
 	double steering_angle = input.steering_angle;
+        double acc_x = input.acc_x;
 
 	/////////////////////////states/////////////////////////////////////
 	//the velocity of the vehicle, expressed in the body frame of the vehicle
-	double v_body[3];
-	double omega_body[3];  //angular velocity, body frame
+        //double v_body[3];
+        //double omega_body[3];  //angular velocity, body frame
 	//the angular velocity of the wheel
-	double omega_w[2];
+        //double omega_w[2];
 	//braking torque:
-	double T_b_general;
-	double Ttop;
-	double T_new_req;
+        //double T_b_general;
+        //double Ttop;
+        //double T_new_req;
 //	double vb_dot[3];  //dot of velocity of body
 //	//the derivative of angular velocity of the wheel
 //	double omegab_dot[3];  //dot of angular velocity of body
 //	double omega_wheel_dot[2];
 //	double T_b_dot_general; //dot of T_b
 
+
+        /*
 	//state:
 	for (i = 0; i < 3; i++){
 		v_body[i] = state.v_body[i];
@@ -614,6 +624,38 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 		else
 			agear_diff = 0;
 	}
+        */
+
+        //dynamics in the paper, input is steer angle and x-acc
+        double xp_dot = state.v_body[0];
+        double yp_dot = state.v_body[1];
+        double psi_dot = state.omega_body[2];
+        double epsi = state.epsi;
+       // double ey = state.ey;
+        // double s = state.s;
+
+
+        if (state.v_body[0]> 1e-1)
+        {
+            //linerized model:
+            out.vb_dot[0] = yp_dot*psi_dot + acc_x;   //dot xp_dot
+            out.vb_dot[1] = -xp_dot*psi_dot -2*(cf+cr)/(m*xp_dot)*yp_dot-2*(a*cf-b*cr)/m/xp_dot*psi_dot + 2*cf/m*steering_angle;   // dot yp_dot
+            out.omegab_dot[2] = -2*(a*cf-b*cr)/Iz/xp_dot*yp_dot-2*(a*a*cf+b*b*cr)/Iz/xp_dot*psi_dot + 2*a*cf/Iz*steering_angle;   //dot  psi_dot
+            out.epsi_dot =  psi_dot - psi_dot_com;    // dot epsi
+            out.ey_dot =  yp_dot*cos(epsi) + xp_dot*sin(epsi);    // dot ey
+            out.s_dot =  xp_dot*cos(epsi)-yp_dot*sin(epsi);     // dot s
+        }
+        else
+        {
+            //linerized model:
+            out.vb_dot[0] = 0;   //dot xp_dot
+            out.vb_dot[1] =  0;   // dot yp_dot
+            out.omegab_dot[2] =  0;   //dot  psi_dot
+            out.epsi_dot =  0;    // dot epsi
+            out.ey_dot =  0;    // dot ey
+            out.s_dot =  0 ;     // dot s
+        }
+
 
 
 	////////test only, Feb. 12///
@@ -704,6 +746,9 @@ void dynamics::integrator(bool verbose){
 			x2.T_b_general = state_global.T_b_general+ 0.5*T_samp*k1.T_b_dot_general;
 			x2.Ttop = state_global.Ttop+ 0.5*T_samp*k1.Ttop_dot;
 			x2.T_new_req = state_global.T_new_req+ 0.5*T_samp*k1.T_new_req_dot;
+                        x2.epsi = state_global.epsi + 0.5*T_samp*k1.epsi_dot;
+                        x2.ey = state_global.ey + 0.5*T_samp*k1.ey_dot;
+                        x2.s = state_global.s + 0.5*T_samp*k1.s_dot;
 			for(int i = 0; i < 3; i++){
 				x2.v_body[i] = state_global.v_body[i] + 0.5*k1.vb_dot[i]*T_samp;
 				x2.omega_body[i] = state_global.omega_body[i] + 0.5*k1.omegab_dot[i]*T_samp;
@@ -716,6 +761,9 @@ void dynamics::integrator(bool verbose){
 			x3.T_b_general = state_global.T_b_general+ 0.5*T_samp*k2.T_b_dot_general;
 			x3.Ttop = state_global.Ttop+ 0.5*T_samp*k2.Ttop_dot;
 			x3.T_new_req = state_global.T_new_req+ 0.5*T_samp*k2.T_new_req_dot;
+                        x3.epsi = state_global.epsi + 0.5*T_samp*k2.epsi_dot;
+                        x3.ey = state_global.ey + 0.5*T_samp*k2.ey_dot;
+                        x3.s = state_global.s + 0.5*T_samp*k2.s_dot;
 			for(int i = 0; i < 3; i++){
 				x3.v_body[i] = state_global.v_body[i] + 0.5*k2.vb_dot[i]*T_samp;
 				x3.omega_body[i] = state_global.omega_body[i] + 0.5*k2.omegab_dot[i]*T_samp;
@@ -728,6 +776,9 @@ void dynamics::integrator(bool verbose){
 			x4.T_b_general = state_global.T_b_general+ T_samp*k3.T_b_dot_general;
 			x4.Ttop = state_global.Ttop+ T_samp*k3.Ttop_dot;
 			x4.T_new_req = state_global.T_new_req+  T_samp*k3.T_new_req_dot;
+                        x4.epsi = state_global.epsi + 0.5*T_samp*k3.epsi_dot;
+                        x4.ey = state_global.ey + 0.5*T_samp*k3.ey_dot;
+                        x4.s = state_global.s + 0.5*T_samp*k3.s_dot;
 			for(int i = 0; i < 3; i++){
 				x4.v_body[i] = state_global.v_body[i] + k3.vb_dot[i]*T_samp;
 				x4.omega_body[i] = state_global.omega_body[i] + k3.omegab_dot[i]*T_samp;
@@ -754,6 +805,9 @@ void dynamics::integrator(bool verbose){
 				state_global.omega_w[j] = state_global.omega_w[j] +  (
 						k1.omega_wheel_dot[j] + 2*k2.omega_wheel_dot[j] + 2* k3.omega_wheel_dot[j] + k4.omega_wheel_dot[j])*T_samp/6;
 			}
+                        state_global.epsi = state_global.epsi+T_samp*(k1.epsi_dot + 2*k2.epsi_dot + 2*k3.epsi_dot+ k4.epsi_dot)/6;
+                        state_global.ey = state_global.ey+T_samp*(k1.ey_dot + 2*k2.ey_dot + 2*k3.ey_dot+ k4.ey_dot)/6;
+                        state_global.s = state_global.s+T_samp*(k1.s_dot + 2*k2.s_dot + 2*k3.s_dot+ k4.s_dot)/6;
 
 			T_global = T_global+T_samp;
 			diff_global.vb_dot[0] = ( k1.vb_dot[0] + 2*k2.vb_dot[0] + 2*k3.vb_dot[0] + k4.vb_dot[0])/6;
@@ -761,6 +815,9 @@ void dynamics::integrator(bool verbose){
 			diff_global.omegab_dot[1] = ( k1.omegab_dot[1] + 2*k2.omegab_dot[1] + 2*k3.omegab_dot[1] + k4.omegab_dot[1])/6;
 			diff_global.omega_wheel_dot[1] = ( k1.omega_wheel_dot[1] +
 					2*k2.omega_wheel_dot[1] + 2*k3.omega_wheel_dot[1] + k4.omega_wheel_dot[1])/6;
+                        diff_global.epsi_dot= ( k1.epsi_dot + 2*k2.epsi_dot + 2*k3.epsi_dot + k4.epsi_dot)/6;
+                        diff_global.ey_dot= ( k1.ey_dot + 2*k2.ey_dot + 2*k3.ey_dot + k4.ey_dot)/6;
+                        diff_global.s_dot= ( k1.s_dot + 2*k2.s_dot + 2*k3.s_dot + k4.s_dot)/6;
 
 			break;
 		}
@@ -813,28 +870,28 @@ void dynamics::integrator(bool verbose){
 }
 
 
-double dynamics::max_dynamics(double a, double b){
-	if (a>=b)
-		return a;
+double dynamics::max_dynamics(double aa, double bb){
+        if (aa>=bb)
+                return aa;
 	else
-		return b;
+                return bb;
 
 }
 
-double dynamics::min_dynamics(double a, double b){
-	if (a<=b)
-		return a;
+double dynamics::min_dynamics(double aa, double bb){
+        if (aa<=bb)
+                return aa;
 	else
-		return b;
+                return bb;
 
 }
 
-double dynamics::abs_dynamics(double a){
-	if (a>=0)
-		return a;
+double dynamics::abs_dynamics(double aa){
+        if (aa>=0)
+                return aa;
 	else{
-		double b = -a;
-		return b;
+                double bb = -aa;
+                return bb;
 	}
 
 }
@@ -948,8 +1005,8 @@ double dynamics::GetRearWheelSpeed() const{
 double dynamics::GetRoadWheelAngle() const{
 	return input_global.steering_angle;
 }
-void dynamics::SetRoadWheelAngle(double a){
-	input_global.steering_angle = a;
+void dynamics::SetRoadWheelAngle(double wa){
+        input_global.steering_angle = wa;
 }
 
 

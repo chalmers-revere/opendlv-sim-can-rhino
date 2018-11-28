@@ -22,6 +22,11 @@ typedef struct
 	double T_b_general;
 	double Ttop;
 	double T_new_req;
+
+        double epsi;
+        double ey;
+        double s;
+
 } state_vehicle;
 
 typedef struct
@@ -33,6 +38,10 @@ typedef struct
 	double T_b_dot_general; //dot of T_b
 	double Ttop_dot;
 	double T_new_req_dot;
+
+        double epsi_dot;
+        double ey_dot;
+        double s_dot;
 } diff_vehicle;
 
 typedef struct
@@ -40,6 +49,8 @@ typedef struct
 	double A_ped;   //pedal
 	double B_ped;  //brake
 	double steering_angle;
+
+        double acc_x;   //acc in x_direction
 } input_vehicle; // Utilised for receiving messages as input
 
 
@@ -100,6 +111,15 @@ public:
 	double lr;
 	double Izz;
 	double Je;
+
+        //20181120parameters:
+        double a;
+        double b;
+        double cf;
+        double cr;
+        double m;
+        double Iz;
+        double psi_dot_com;
 
 	//the fraction by which the engine torque is reduced
 	double Efactor;
