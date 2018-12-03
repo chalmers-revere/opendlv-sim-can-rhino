@@ -117,19 +117,35 @@ int32_t main(int32_t argc, char **argv) {
                 od4->send(kinematicMsg);
 
                 if (VERBOSE) std::cout << "Current Kinematic states sent." << std::endl;
+
+                // 2018 Dec. Update: broadcast nominal states as well
+                internal::nomState nomStateMsg;
+                /*message internal.nomState [id = 3002] {
+                  double xp_dot [id = 1];
+                  double yp_dot [id = 2];
+                  double psi_dot [id =3 ];
+                  double epsi [id = 4];
+                  double ey [id = 5];
+                  double s [id = 6];
+                  double steer [id = 7];
+                  double acc [id = 8];
+                }*/
+                nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
+                nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
+                nomStateMsg.psi_dot(m_dynamics.GetYawVelocity());
+                nomStateMsg.epsi(m_dynamics.state_global.epsi);
+                nomStateMsg.ey(m_dynamics.state_global.ey);
+                nomStateMsg.s(m_dynamics.state_global.s);
+                nomStateMsg.steer(m_dynamics.GetRoadWheelAngle());
+                nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
+
+                od4->send(nomStateMsg);
+                if (VERBOSE) std::cout << "Current nominal states sent." << std::endl;
+                
                 return false;
 
             }// end of lambda function
         }; // end of Output definition
-
-
-
-//        if (od4->isRunning())
-//        {
-//            od4->timeTrigger(FREQ, Output);
-//            std::cout << "Time triggered functions attributed." << std::endl;
-//        }        
-
 
         using namespace std::literals::chrono_literals;
         while (od4->isRunning()) {
