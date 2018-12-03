@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "cluon-complete.hpp"
+#include "opendlv-standard-message-set.hpp"
 
 #include "data_structure.hpp"
 
