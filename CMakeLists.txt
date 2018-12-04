@@ -102,6 +102,9 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 add_executable(virtual_control ${CMAKE_CURRENT_SOURCE_DIR}/src/virtual_control.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/safety_certificate_complex.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/constraint_obstacles_dynamics_complex.cpp ${qpOASESFiles} $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(virtual_control ${LIBRARIES})
 
+# Actual control
+add_executable(actual_control ${CMAKE_CURRENT_SOURCE_DIR}/src/actual_control.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
+target_link_libraries(actual_control ${LIBRARIES})
 ################################################################################
 # Enable unit testing.
 enable_testing()
