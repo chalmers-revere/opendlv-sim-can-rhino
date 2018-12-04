@@ -76,7 +76,7 @@ int32_t main(int32_t argc, char *argv[])
                 od4.send(msgNomU);
                 if (VERBOSE)
                 {
-                    std::cout << "Message nomU sent: [" << msgNomU.acc() << ", " << msgNomU.steer() << "]" << std::endl;
+                    std::cout << "Message nomU sent: " << std::endl << "[" << msgNomU.acc() << ", " << msgNomU.steer() << "]" << std::endl;
                 }
                 return false;
             }
