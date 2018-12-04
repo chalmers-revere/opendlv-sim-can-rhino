@@ -19,7 +19,8 @@ project(opendlv-sim-can-rhino)
 
 ################################################################################
 # Defining the relevant versions of OpenDLV Standard Message Set and libcluon.
-set(OPENDLV_STANDARD_MESSAGE_SET opendlv-standard-message-set-v0.9.5.odvd)
+# set(OPENDLV_STANDARD_MESSAGE_SET opendlv-standard-message-set-v0.9.5.odvd)
+set(OPENDLV_STANDARD_MESSAGE_SET opendlv.odvd)
 set(CLUON_COMPLETE cluon-complete-v0.0.110.hpp)
 
 ################################################################################
@@ -39,15 +40,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -fstack-protector \
     -fomit-frame-pointer \
     -pipe \
-    -pedantic -pedantic-errors \
-    -Werror \
-    -Weffc++ \
-    -Wall -Wextra -Wshadow -Wdeprecated \
+    -pedantic \
+    -Wall -Wextra -Wdeprecated \
     -Wdiv-by-zero -Wfloat-equal -Wfloat-conversion -Wsign-compare -Wpointer-arith \
     -Wuninitialized -Wunreachable-code \
-    -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-but-set-parameter -Wunused-but-set-variable \
+    -Wunused -Wunused-function -Wunused-label  -Wunused-but-set-variable \
     -Wunused-value -Wunused-variable -Wunused-result \
     -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn")
+# The following flag(s) is/are removed to satisfy the compiler dealing with qpOASES
+# -Weffc++ -Wunused-parameter -Wunused-but-set-parameter -Wshadow -pedantic-errors
+
 # Threads are necessary for linking the resulting binaries as UDPReceiver is running in parallel.
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -62,6 +64,15 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cluon-msc
     COMMAND ln -sf ${CMAKE_CURRENT_SOURCE_DIR}/src/${CLUON_COMPLETE} ${CMAKE_BINARY_DIR}/cluon-complete.cpp
     COMMAND ${CMAKE_CXX_COMPILER} -o ${CMAKE_BINARY_DIR}/cluon-msc ${CMAKE_BINARY_DIR}/cluon-complete.cpp -std=c++14 -pthread -D HAVE_CLUON_MSC
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/${CLUON_COMPLETE})
+    
+################################################################################
+# <test by Yue Kang>
+# Force cmake to generate cluon-complete.hpp before compilation
+add_custom_target(temp ALL
+    DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc
+)
+# Link qpOASES codes to the executable
+FILE(GLOB qpOASESFiles ${CMAKE_CURRENT_SOURCE_DIR}/src/qpOASES/*.cpp)
 
 ################################################################################
 # Generate opendlv-standard-message-set.hpp from ${OPENDLV_STANDARD_MESSAGE_SET} file.
@@ -74,6 +85,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/opendlv-standard-messa
 include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/qpOASES)
 
 ################################################################################
 # Gather all object code first to avoid double compilation.
@@ -81,9 +93,14 @@ add_library(${PROJECT_NAME}-core OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/src/opendlv-
 set(LIBRARIES Threads::Threads)
 
 ################################################################################
-# Create executable.
+# Create executables.
+# Model (named after the project name itself by default)
 add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+
+# Virtual control
+add_executable(virtual_control ${CMAKE_CURRENT_SOURCE_DIR}/src/virtual_control.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/safety_certificate_complex.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/constraint_obstacles_dynamics_complex.cpp ${qpOASESFiles} $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
+target_link_libraries(virtual_control ${LIBRARIES})
 
 ################################################################################
 # Enable unit testing.
