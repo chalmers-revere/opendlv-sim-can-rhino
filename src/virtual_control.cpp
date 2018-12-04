@@ -35,19 +35,17 @@ int32_t main(int32_t argc, char *argv[])
 
     Global_variables gl;
 
-    cluon::OD4Session od4(CID, [](cluon::data::Envelope &&env) noexcept {
+    cluon::OD4Session od4(CID, [&nom_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
         if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
-            nom_state = FB_state(received.xp_dot, received.yp_dot, received.epsi, received.ey, received.s, received.steer, received.acc);
+            nom_state = FB_state(received.xp_dot(), received.yp_dot(), received.psi_dot(), received.epsi(), received.ey(), received.s(), received.steer(), received.acc());
             if (VERBOSE)
             {
                 std::cout << "New nom_state received:" << std::endl;
                 nom_state.print(); 
             }
         }
-
-        if (env.dataType() == internal::nomState::ID())
     });
 
     if (0 == od4.isRunning())
@@ -57,7 +55,7 @@ int32_t main(int32_t argc, char *argv[])
     }
     else
     {
-        auto sendMsg{[&od4, &nom_state, &gl]() -> bool
+        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE]() -> bool
             {
                 //gl.scale unused
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
@@ -67,18 +65,18 @@ int32_t main(int32_t argc, char *argv[])
                 if (gl.nosolution)
                 {
                     std::cerr << "WARNING: No solution detected from solver!!" << std::endl;
-                    msgNomU.acc = 0.0;
-                    msgNomU.steer = 0.0;
+                    msgNomU.acc(0.0);
+                    msgNomU.steer(0.0);
                 }
                 else
                 {
-                    msgNomU.acc = correct.x(0);
-                    msgNomU.steer = correct.x(1);
+                    msgNomU.acc(correct.x(0));
+                    msgNomU.steer(correct.x(1));
                 }
                 od4.send(msgNomU);
                 if (VERBOSE)
                 {
-                    std::cout << "Message nomU sent: [" << msgNomU.acc << ", " << msgNomU.steer << "]" << std::endl;
+                    std::cout << "Message nomU sent: [" << msgNomU.acc() << ", " << msgNomU.steer() << "]" << std::endl;
                 }
                 return false;
             }

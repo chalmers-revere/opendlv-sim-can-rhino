@@ -208,7 +208,9 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
             SQProblem qp(2, 1);
             real_t H[4] = {1.0, 0.0, 0.0, 1.0};
             real_t f2[2] = {-2 * u_nom(0), -2 * u_nom(1)};
+            // const int size1 = A_n_and.size() * 2, size2 = b_n_and.size();
             real_t rtA_n_and[A_n_and.size() * 2], rtb_n_and[b_n_and.size()];
+            // real_t rtA_n_and[size1], rtb_n_and[size2];
             real_t *rtNullprt = NULL;
             real_t rtOut[2];
             for (int i = 0; i < A_n_and.size(); i++)
@@ -298,7 +300,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     else
     {
         out.hasSolution = false;
-        if (false == gl.brake_flag) gl.state_brakini = u;
+        if (false == gl.brake_flag) gl.state_brakeini = u;
         double tempEpsi = atan(yp_dot / xp_dot) + epsi;
         double am = -alpha(1);
         out.x(0) = m * am * sin(tempEpsi - epsi) / (2 * cf) 

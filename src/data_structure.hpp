@@ -20,11 +20,12 @@ public:
     double s{0.0};       // longitudinal position
     double steer{0.0};
     double acc{0.0};
+    FB_state() {}
     FB_state(double a, double b, double c, double d, double e, double f, double g, double h):
         xp_dot(a), yp_dot(b), psi_dot(c), epsi(d), ey(e), s(f), steer(g), acc(h){}
     FB_state operator +(const FB_state& other)
     {
-        return FB_state(
+        FB_state new_state(
             this->xp_dot + other.xp_dot,
             this->yp_dot + other.yp_dot,
             this->psi_dot + other.psi_dot,
@@ -34,19 +35,21 @@ public:
             this->steer + other.steer,
             this->acc + other.acc
         );
+        return new_state;
     }
     FB_state operator +(const Eigen::VectorXd& other)
     {
-        return FB_state( 
+        FB_state new_state( 
             this->xp_dot + other(0),
             this->yp_dot + other(1),
-            this->psi_dot + other(2)
+            this->psi_dot + other(2),
             this->epsi + other(3),
             this->ey + other(4),
             this->s + other(5),
             this->steer + other(6),
             this->acc + other(7)
         );
+        return new_state;
     }
     FB_state& operator +=(const FB_state& other)
     {
@@ -72,6 +75,11 @@ public:
         this->acc += other(7);
         return *this;
     }
+    void print()
+    {
+        std::cout << "[" << this->xp_dot << ", " << this->yp_dot << ", " << this->psi_dot << "," << this->epsi;
+        std::cout << ", " << this->ey << ", " << this->s << ", " << this->steer << ", " << this->acc << "]" << std::endl;
+    }
 };
 
 class Obstacle
@@ -95,7 +103,7 @@ public:
     bool isConf(std::vector<Obstacle> list)
     {
         if (0 == list.size()) return false;
-        for (int i = 0; i < list.size(); i++)
+        for (uint16_t i = 0; i < list.size(); i++)
         {
             if (this->isConf(list[i])) return true;
         }
@@ -138,37 +146,37 @@ public:
 class Global_variables
 {
 public:
-    int scale; // mayby not useful
-    Eigen::Vector2d u_global;
-    int scale_tracking;
-    Eigen::Vector2d u_tracking_global;
-    int scale_record;
+    int scale{0}; // mayby not useful
+    Eigen::Vector2d u_global{};
+    int scale_tracking{0};
+    Eigen::Vector2d u_tracking_global{};
+    int scale_record{0};
 
-    std::vector<Eigen::Vector3d> trajd; // this contains all the 3 variables in the following line
+    std::vector<Eigen::Vector3d> trajd{}; // this contains all the 3 variables in the following line
     //Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
 
-    bool brake_flag, brake_flag_pre;
-    bool nosolution;
+    bool brake_flag{false}, brake_flag_pre{false};
+    bool nosolution{false};
 
     // the following three are initialised by constraint_obstacles.m
-    std::vector<Obstacle> traj_ob;
+    std::vector<Obstacle> traj_ob{};
     // int no_ob;
     // vector<Eigen::Vector2d> pos_ob_array_pre;
     // vector<double> radius_pre;
 
-    std::vector<bool> beta_2;
-    double dt;
+    std::vector<bool> beta_2{};
+    double dt{0.0};
 
     // // For data sample and visualisation
     // vector<double> t_ctrl;
     // vector<Eigen::VectorXd> u_ctrl;
 
     // Unlisted global variables
-    bool dead;
-    FB_state state_brakeini;
+    bool dead{false};
+    FB_state state_brakeini{};
     Global_variables()
     {
-        scale = 0; 
+        /*scale = 0; 
         u_global << 0.0, 0.0;
         scale_tracking = 0;
         u_tracking_global << 0.0, 0.0;
@@ -178,16 +186,16 @@ public:
         brake_flag_pre = false;
         nosolution = false;
         dt = 0.001;
-        state_brakeini = new FB_state();
-    }
-}
+        state_brakeini = new FB_state();*/
+    };
+};
 
 std::vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state, Global_variables &);
 
 Output_safety safety_certificate_complex(FB_state, Global_variables &);
 
-Eigen::Vector2d virtual_control(Global_variables &)
+// Eigen::Vector2d virtual_control(Global_variables &);
 
-void bicycle_model(double);
+// void bicycle_model(double);
 
-void ob_traj(double, bool, &Global_variables);
+// void ob_traj(double, bool, Global_variables &);
