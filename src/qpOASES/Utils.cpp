@@ -224,7 +224,7 @@ returnValue print( const int_t* const index, int_t n, const char* name )
  */
 returnValue myPrintf( const char* s )
 {
-	#ifndef __SUPPRESSANYOUTPUT__
+	/*#ifndef __SUPPRESSANYOUTPUT__
 
 
 		if ( s == 0 )
@@ -240,11 +240,11 @@ returnValue myPrintf( const char* s )
 				if ( outputfile == 0 )
 					return THROWERROR( RET_NO_GLOBAL_MESSAGE_OUTPUTFILE );
 				fprintf( outputfile, "%s", s );
-			#endif /* __SCILAB__ */
-		#endif /* __MATLAB__ */
+			#endif // __SCILAB__ 
+		#endif // __MATLAB__
 
-	#endif /* __SUPPRESSANYOUTPUT__ */
-
+	#endif // __SUPPRESSANYOUTPUT__
+	*/
 	return SUCCESSFUL_RETURN;
 }
 
@@ -254,15 +254,15 @@ returnValue myPrintf( const char* s )
  */
 returnValue printCopyrightNotice( )
 {
-	#ifndef __SUPPRESSANYOUTPUT__
-		#ifndef __XPCTARGET__
-		#ifndef __DSPACE__
-		#ifndef __NO_COPYRIGHT__
-		myPrintf( "\nqpOASES -- An Implementation of the Online Active Set Strategy.\nCopyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,\nChristian Kirches et al. All rights reserved.\n\nqpOASES is distributed under the terms of the \nGNU Lesser General Public License 2.1 in the hope that it will be \nuseful, but WITHOUT ANY WARRANTY; without even the implied warranty \nof MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \nSee the GNU Lesser General Public License for more details.\n\n" );
-		#endif /* __NO_COPYRIGHT__ */
-		#endif /* __DSPACE__ */
-		#endif /* __XPCTARGET__ */
-	#endif /* __SUPPRESSANYOUTPUT__ */
+	// #ifndef __SUPPRESSANYOUTPUT__
+	// 	#ifndef __XPCTARGET__
+	// 	#ifndef __DSPACE__
+	// 	#ifndef __NO_COPYRIGHT__
+	// 	myPrintf( "\nqpOASES -- An Implementation of the Online Active Set Strategy.\nCopyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,\nChristian Kirches et al. All rights reserved.\n\nqpOASES is distributed under the terms of the \nGNU Lesser General Public License 2.1 in the hope that it will be \nuseful, but WITHOUT ANY WARRANTY; without even the implied warranty \nof MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \nSee the GNU Lesser General Public License for more details.\n\n" );
+	// 	#endif /* __NO_COPYRIGHT__ */
+	// 	#endif /* __DSPACE__ */
+	// 	#endif /* __XPCTARGET__ */
+	// #endif /* __SUPPRESSANYOUTPUT__ */
 	return SUCCESSFUL_RETURN;
 }
 
