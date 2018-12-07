@@ -34,6 +34,7 @@ int32_t main(int32_t argc, char *argv[])
         std::cout << "Nom_state initialised." << std::endl;
 
     Global_variables gl;
+    gl.generate_init_ob();
 
     cluon::OD4Session od4(CID, [&nom_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
         if (env.dataType() == internal::nomState::ID())
@@ -53,11 +54,12 @@ int32_t main(int32_t argc, char *argv[])
         std::cerr << "ERROR: No OD4 running!!!" << std::endl;
         return -1;
     }
-    else
+    while (od4.isRunning())
     {
         auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE]() -> bool
             {
                 //gl.scale unused
+                gl.ob_traj(false); // update position of obstacles
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
                 gl.nosolution = !(correct.hasSolution);
 
@@ -83,24 +85,5 @@ int32_t main(int32_t argc, char *argv[])
         };
         od4.timeTrigger(FREQ,sendMsg);
     }
-
     return 0;
 }
-
-/* Eigen::Vector2d virtual_control(FB_state state, Global_variables& gl)
-{
-    Eigen::Vector2d u;
-    if (0 == gl.scale)
-    {
-        // "horizon = 1" unused
-        Output_safety correct = safety_certificate_complex(state, gl); 
-        gl.nosolution = !(correct.hasSolution);
-        u = correct.x;
-        gl.u_global = u;
-    }
-    else u = gl.u_global;
-
-    gl.scale = (gl.scale < 20) ? gl.scale + 1 : 0;
-
-    return u;
-} */

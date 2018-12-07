@@ -8,6 +8,9 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
 
 class FB_state
 {
@@ -160,7 +163,7 @@ public:
 
     // the following three are initialised by constraint_obstacles.m
     std::vector<Obstacle> traj_ob{};
-    // int no_ob;
+    int no_ob{2};
     // vector<Eigen::Vector2d> pos_ob_array_pre;
     // vector<double> radius_pre;
 
@@ -176,26 +179,58 @@ public:
     FB_state state_brakeini{};
     Global_variables()
     {
-        /*scale = 0; 
+        scale = 0; 
         u_global << 0.0, 0.0;
         scale_tracking = 0;
         u_tracking_global << 0.0, 0.0;
         scale_record = 0;
-        // Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
+        Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
+        tra_com_pre << 0.0, 0.0, 0.0;
+        tra_com_dot_pre << 0.0, 0.0, 20.0; // Pay attention to the value here!
+        tra_com_ddot_pre << 0.0, 0.0, 0.0;
+        trajd.push_back(tra_com_pre);
+        trajd.push_back(tra_com_dot_pre);
+        trajd.push_back(tra_com_ddot_pre);
         brake_flag = false;
         brake_flag_pre = false;
         nosolution = false;
         dt = 0.001;
-        state_brakeini = new FB_state();*/
-    };
+        for (int i = 0; i < 50; ++i)
+        {
+            beta_2.push_back(false);
+        }
+    }
+    void generate_init_ob()
+    {
+        using namespace std;
+        srand((int)time(NULL));
+        for (uint16_t i = 0; i < no_ob; i++)
+        {
+            Obstacle curr;
+            do
+            {
+                curr.radius = 2 + 1.5 * (double)rand() / RAND_MAX;
+                curr.pos_x = 80 + 100 * (double)rand() / RAND_MAX;
+                curr.pos_y = -1.7 + 3.4 * (double)rand() / RAND_MAX;
+            }
+            while (curr.isConf(traj_ob));
+            traj_ob.push_back(curr);
+        }
+    }
+
+    void ob_traj(bool isDynamic) // update position of the obstacles
+    {
+        for (uint16_t i = 0; i < no_ob; i++)
+        {
+            double v = isDynamic ? std::sqrt(dt) * 2 : 0.0;
+
+            traj_ob[i].pos_x += v * dt;
+            traj_ob[i].vel_x = v;
+        }
+    }
 };
+
 
 std::vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state, Global_variables &);
 
 Output_safety safety_certificate_complex(FB_state, Global_variables &);
-
-// Eigen::Vector2d virtual_control(Global_variables &);
-
-// void bicycle_model(double);
-
-// void ob_traj(double, bool, Global_variables &);

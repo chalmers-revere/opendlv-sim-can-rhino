@@ -11,7 +11,6 @@ using namespace std;
 
 Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
 {
-    // vector<bool> &beta_2, bool& brake_flag, FB_state& state_brakini
     Output_safety out;
 
     double xp_dot = u.xp_dot, yp_dot = u.yp_dot, psi_dot = u.psi_dot;
@@ -96,6 +95,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     // line 83 so far
 
     vector<Coefficient> results_2 = constraint_obstacles_dynamics_complex(u, gl);
+
     int no_ob_active = results_2.size();
     int nu_combine = 1;
 
@@ -110,6 +110,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
         double theta_d_small = theta_d_big / 1000;
 
         // TODO: double-check if beta_2 is initialized as "all false"
+
         if ((!gl.beta_2[i]) && (results_2[i].h_angle_fix > -theta_d_small)) gl.beta_2[i] = true;
         else if (gl.beta_2[i] && (results_2[i].h_angle_fix <= -theta_d_big)) gl.beta_2[i] = false;
 
@@ -119,6 +120,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
 
         if (gl.beta_2[i] && (results_2[i].h_angle_moving <= shreshold_movingangle))
         {
+
             theta_d_small = theta_d_big / 2;
             slack_mult(0, i) = (results_2[i].h_angle_fix >= -theta_d_big) ? 1 : 0;
             slack_mult(1, i) = (results_2[i].h_dis >= 0) ? 1 : 0;
@@ -142,6 +144,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     int tempI = 0;
     for (int i = 0; i < no_ob_active; ++i)
     {
+
         if ((0 == slack_mult(0, i)) && (1 == slack_mult(1, i)))
         {
             order.col(no_ob_active) *= 2;
@@ -201,9 +204,12 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
                     b_n_or.push_back(results_2[j].b_n_dis);
                 }
             }
+
+
         } // for (j) 
 
         {
+
             using namespace qpOASES;
             SQProblem qp(2, 1);
             real_t H[4] = {1.0, 0.0, 0.0, 1.0};
@@ -311,5 +317,6 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     }
     out.value_min = value_min;
     out.coef = results_2[0];
+
     return out;
 }

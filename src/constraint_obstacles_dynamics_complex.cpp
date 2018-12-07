@@ -43,7 +43,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
         rp_b << (u.s - b.pos_x), (u.ey - b.pos_y);
         return (rp_a.norm() < rp_b.norm());
     }); // line 104 so far
-    
+
     if (ob_array.size()>1)
     {
         if (abs(ob_array[0].pos_x - ob_array[1].pos_x) < 0.0001)
@@ -295,6 +295,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             A_n_angle_fix(0) = - L_g_h_ang;
             b_n_angle_fix = b_n_angle_fix = L_f_h_ang + L_t_h_ang + 3 * h_ang;
             // line 297 so far
+
         } // line 303 so far
 
         bool alert = false;
@@ -305,6 +306,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             gl.dead = true;
             dis_maxacc_sqr = 0.000001;
         }
+
         double h_vel = sqrt(dis_maxacc_sqr) + (rel_pos.adjoint() * rel_vel)(0) / rel_vel.norm();
         // line 318 so far
 
@@ -379,6 +381,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
         Eigen::Vector2d A_n_vel = -L_g_h_vel;
         double b_n_vel = L_f_h_vel + L_t_h_vel + 3 * h_vel;
         // line 368 so far
+
         
         Coefficient c;
         c.norm_relpos = rel_pos.norm();

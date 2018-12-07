@@ -100,7 +100,7 @@ int32_t main(int32_t argc, char *argv[])
         std::cerr << "ERROR: No OD4 running!!!" << std::endl;
         return -1;
     }
-    else
+    while (od4.isRunning())
     {
         auto sendMsg{[&od4, &nom_state, &real_state, &nom_u, &VERBOSE]() -> bool
             {
