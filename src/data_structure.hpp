@@ -80,7 +80,7 @@ public:
     }
     void print()
     {
-        std::cout << "[" << this->xp_dot << ", " << this->yp_dot << ", " << this->psi_dot << "," << this->epsi;
+        std::cout << "[" << this->xp_dot << ", " << this->yp_dot << ", " << this->psi_dot << ", " << this->epsi;
         std::cout << ", " << this->ey << ", " << this->s << ", " << this->steer << ", " << this->acc << "]" << std::endl;
     }
 };
