@@ -112,6 +112,12 @@ public:
         }
     return false;
     }
+
+    void print()
+    {
+        std::cout << "Obstacle coor: [" << pos_x << ", " << pos_y << "], vel: [" << vel_x << ", " << vel_y << "]" << std::endl;
+        std::cout << "acc:  [" << acc_x << ", " << acc_y << "], radius: " << radius << std::endl;
+    }
 };
 
 class Coefficient // the return value "out", line 463-480 in constraint_obs~.m
@@ -169,6 +175,8 @@ public:
 
     std::vector<bool> beta_2{};
     double dt{0.0};
+
+    bool isVerbose{false};
 
     // // For data sample and visualisation
     // vector<double> t_ctrl;

@@ -29,12 +29,19 @@ int32_t main(int32_t argc, char *argv[])
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-    FB_state nom_state(0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(4.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 
     Global_variables gl;
+    gl.isVerbose = VERBOSE;
+
     gl.generate_init_ob();
+
+    if (VERBOSE)
+    {
+        std::cout << "Obstacles generated." << std::endl;
+    }
 
     cluon::OD4Session od4(CID, [&nom_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
         if (env.dataType() == internal::nomState::ID())
@@ -59,7 +66,17 @@ int32_t main(int32_t argc, char *argv[])
         auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE]() -> bool
             {
                 //gl.scale unused
-                gl.ob_traj(false); // update position of obstacles
+                gl.ob_traj(true); // update position of obstacles
+                /*if (VERBOSE)
+                {
+                    std::cout << "Obstacle status:" << std::endl;
+                    for (uint16_t i = 0; i < gl.no_ob; ++i)
+                    {
+                        std::cout << "No. " << i << " ";
+                        gl.traj_ob[i].print();
+                    }
+                }*/
+
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
                 gl.nosolution = !(correct.hasSolution);
 

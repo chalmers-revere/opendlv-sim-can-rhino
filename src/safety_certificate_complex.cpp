@@ -97,6 +97,12 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     vector<Coefficient> results_2 = constraint_obstacles_dynamics_complex(u, gl);
 
     int no_ob_active = results_2.size();
+
+    /*if (gl.isVerbose)
+    {
+        std::cout << "no_ob_active = " << no_ob_active << std::endl;
+    }*/
+
     int nu_combine = 1;
 
     double shreshold_movingangle = pow(10, -20);
@@ -141,6 +147,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
 
     Eigen::MatrixXi order(nu_combine, no_ob_active);
     order.setOnes();
+    
     int tempI = 0;
     for (int i = 0; i < no_ob_active; ++i)
     {
@@ -156,7 +163,8 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
             for (int j = 0; j < pow(2, tempI - 1); j++)
             {
                 // fill in the sub-matrices by 2s
-                order.block((2 * j + 1) * length, no_ob_active, length, 1) *= 2;
+                // std::cout << "block :" << (2 * j + 1) * length << " " << no_ob_active << " " << length << std::endl;
+                order.block((2 * j + 1) * length, i, length, 1) *= 2;
             }
         }
     }

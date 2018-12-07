@@ -34,11 +34,11 @@ int32_t main(int32_t argc, char *argv[])
 
 
 
-    FB_state nom_state(0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(3.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "nom_state initialised." << std::endl;
 
-    FB_state real_state(0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state real_state(3.0, 0, 0, 0, 0, 0, 0, 0);
 
     Eigen::Vector2d nom_u; // Order: [acc, steer]'
     nom_u << 0.0, 0.0;
