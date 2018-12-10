@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018 Yushu Yu and Yue Kang
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <cstdint>
 #include <chrono>
 #include <iostream>
@@ -16,19 +33,25 @@ int32_t main(int32_t argc, char *argv[])
 {
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
 
-    uint16_t CID = 113;
+    uint16_t CID = 113, CID2 = 114;
     if (0 == commandlineArguments.count("cid"))
     {
         std::cerr << "WARNING: No cid assigned, using 113 by default ('--cid=113')." << std::endl;
     }
     else CID = std::stoi(commandlineArguments["cid"]);
 
+    if (0 == commandlineArguments.count("cid2"))
+    {
+        std::cerr << "WARNING: No cid2 assigned, using 114 by default ('--cid2=114')." << std::endl;
+    }
+    else CID2 = std::stoi(commandlineArguments["cid2"]);
+
     uint32_t FREQ = 50;
     if (0 == commandlineArguments.count("freq"))
     {
         std::cerr << "WARNING: No frequency assigned, using 50 by default ('--freq=50')." << std::endl;
     }
-    else CID = std::stoi(commandlineArguments["freq"]);
+    else FREQ = std::stoi(commandlineArguments["freq"]);
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
@@ -47,7 +70,7 @@ int32_t main(int32_t argc, char *argv[])
 
     // Global_variables gl;
 
-    cluon::OD4Session od4(CID, [&nom_state, &real_state, &nom_u, &VERBOSE](cluon::data::Envelope &&env) noexcept {
+    cluon::OD4Session od4(CID, [&nom_state, &nom_u, &VERBOSE](cluon::data::Envelope &&env) noexcept {
         if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
@@ -68,7 +91,9 @@ int32_t main(int32_t argc, char *argv[])
                 std::cout << "[" << nom_u(0) << ", " << nom_u(1) << "]" << std::endl;
             }
         }
-        else if (env.dataType() == opendlv::sim::Frame::ID())
+    });
+    cluon::OD4Session od4_2(CID2, [&real_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
+        if (env.dataType() == opendlv::sim::Frame::ID())
         {
             opendlv::sim::Frame received = cluon::extractMessage<opendlv::sim::Frame>(std::move(env));
             real_state.s = received.x();
@@ -94,15 +119,19 @@ int32_t main(int32_t argc, char *argv[])
             }
         }
     });
-
     if (0 == od4.isRunning())
     {
-        std::cerr << "ERROR: No OD4 running!!!" << std::endl;
+        std::cerr << "ERROR: Internal OD4 not running!!!" << std::endl;
         return -1;
     }
-    while (od4.isRunning())
+    if (0 == od4_2.isRunning())
     {
-        auto sendMsg{[&od4, &nom_state, &real_state, &nom_u, &VERBOSE]() -> bool
+        std::cerr << "ERROR: External OD4 not running!!!" << std::endl;
+        return -2;
+    }
+    while (od4.isRunning() && od4_2.isRunning())
+    {
+        auto sendMsg{[&od4_2, &nom_state, &real_state, &nom_u, &VERBOSE]() -> bool
             {
                 Eigen::Vector2d u;
                 if (nom_state.xp_dot <= 1e-1)
@@ -169,8 +198,8 @@ int32_t main(int32_t argc, char *argv[])
                 opendlv::proxy::GroundSteeringRequest gsrMsg;
                 pprMsg.position((float)u(0));
                 gsrMsg.groundSteering((float)u(1));
-                od4.send(pprMsg);
-                od4.send(gsrMsg);
+                od4_2.send(pprMsg);
+                od4_2.send(gsrMsg);
                 if (VERBOSE)
                 {
                     std::cout << "Request messages sent:" << std::endl << "[" << u(0) << ", " << u(1) << "]" << std::endl;
@@ -178,7 +207,7 @@ int32_t main(int32_t argc, char *argv[])
                 return false;
             } // end of inner lambda function
         }; // end of sendMsg
-        od4.timeTrigger(FREQ,sendMsg);
+        od4_2.timeTrigger(FREQ,sendMsg);
     }
     return 0;
 }
