@@ -30,10 +30,11 @@ int32_t main(int32_t argc, char **argv) {
     dynamics m_dynamics;    
     int32_t retCode{0};
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
-    if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq"))) {
+    if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq")) || (0 == commandlineArguments.count("cid2") )) {
         std::cerr << argv[0] << " simulates can-rhino." << std::endl;
-        std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=111 --freq=50" << std::endl;
+        std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --cid2=<Second OD4Session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50" << std::endl;
+        std::cerr << "(The second OD4Session is for vehicle state overriding from external source.)" << std::endl;
         retCode = 1;
     } else {
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
@@ -49,6 +50,9 @@ int32_t main(int32_t argc, char **argv) {
 //        };
         uint16_t argCID = static_cast<uint16_t>(std::stoi(commandlineArguments["cid"]));
         std::shared_ptr<cluon::OD4Session> od4 = std::shared_ptr<cluon::OD4Session>(new cluon::OD4Session(argCID));
+
+        uint16_t argCID2 = static_cast<uint16_t>(std::stoi(commandlineArguments["cid2"]));
+        std::shared_ptr<cluon::OD4Session> od4_2 = std::shared_ptr<cluon::OD4Session>(new cluon::OD4Session(argCID2));
 
         // Define data triggered lambda functions
         auto Input_Pedal{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
@@ -97,6 +101,37 @@ int32_t main(int32_t argc, char **argv) {
 //            std::cout << "Data triggered functions attributed." << std::endl;
         }
 
+        auto Input_Override_States{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+            {
+                internal::nomState ext_state = cluon::extractMessage<internal::nomState>(std::move(env));
+                if (VERBOSE) std::cout << "External overriding states received: " << std::endl \
+                    << "[" << ext_state.xp_dot() << ", " << ext_state.yp_dot() << ", " << ext_state.psi_dot() << ", " << ext_state.epsi() << ", " \
+                    << ext_state.ey() << ", " << ext_state.s() << ", " << ext_state.steer() << ", " << ext_state.acc() << "]" << std::endl;
+                m_dynamics.state_global.epsi = ext_state.epsi();
+                m_dynamics.state_global.ey = ext_state.ey();
+                m_dynamics.state_global.s = ext_state.s();
+                m_dynamics.state_global.v_body[0] = ext_state.xp_dot();
+                m_dynamics.state_global.v_body[1] = ext_state.yp_dot();
+                m_dynamics.state_global.omega_body[2] = ext_state.psi_dot(); // yaw rate
+            }
+        };
+        /*message internal.nomState [id = 3002] {
+  double xp_dot [id = 1];
+  double yp_dot [id = 2];
+  double psi_dot [id =3 ];
+  double epsi [id = 4];
+  double ey [id = 5];
+  double s [id = 6];
+  double steer [id = 7];
+  double acc [id = 8];
+}*/
+
+        if (od4_2->isRunning())
+        {
+            od4_2->dataTrigger(internal::nomState::ID(), Input_Override_States);
+        }
+
+
         // Define time triggered lambda function
         auto Output{[od4, &m_dynamics, &FREQ, &VERBOSE]() -> bool
             {
@@ -141,7 +176,7 @@ int32_t main(int32_t argc, char **argv) {
 
                 od4->send(nomStateMsg);
                 if (VERBOSE) std::cout << "Current nominal states sent." << std::endl;
-                
+
                 return false;
 
             }// end of lambda function
