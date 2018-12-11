@@ -115,3 +115,5 @@ add_test(NAME ${PROJECT_NAME}-runner COMMAND ${PROJECT_NAME}-runner)
 ################################################################################
 # Install executable.
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
+install(TARGETS virtual_control DESTINATION bin COMPONENT virtual_control)
+install(TARGETS actual_control DESTINATION bin COMPONENT actual_control)

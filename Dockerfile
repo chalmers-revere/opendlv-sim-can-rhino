@@ -4,8 +4,8 @@ RUN apt update && apt upgrade -y && \
 RUN cp -r /usr/include/eigen3/Eigen /usr/include
 ADD . /opt/sources
 WORKDIR /opt/sources
-RUN mkdir build && cd build && cmake .. && make
+RUN mkdir build && cd build && cmake .. && make && make install
 
-FROM alpine:3.8
+FROM ubuntu:18.04
 WORKDIR /usr/bin
-COPY --from=builder /opt/source/build /usr/bin
+COPY --from=builder /usr/local/bin .
