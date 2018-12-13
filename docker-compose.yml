@@ -2,13 +2,13 @@ version: '2'
 services:
 # $ docker run -ti --rm --net=host adam2092/rhino-sim-test:v0.0.1 opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=50 --verbose
   vehicle_model:
-    image: adam2092/rhino-sim-test:v0.0.1
+    image: adam2092/rhino-sim-test:v0.0.2
     network_mode: "host"
     command: "opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=50"
 
 # $ docker run -ti --rm --net=host adam2092/rhino-sim-test:v0.0.1 opendlv-sim-can-rhino --cid=113 --cid2=114 --freq=50 --verbose
   nominal_dynamics:
-    image: adam2092/rhino-sim-test:v0.0.1
+    image: adam2092/rhino-sim-test:v0.0.2
     depends_on: 
     - vehicle_model
     network_mode: "host"
@@ -16,7 +16,7 @@ services:
 
 # $ docker run -ti --rm --net=host adam2092/rhino-sim-test:v0.0.1 virtual_control --cid=113 --freq=50 --verbose
   virtual_control:
-    image: adam2092/rhino-sim-test:v0.0.1
+    image: adam2092/rhino-sim-test:v0.0.2
     depends_on:
     - nominal_dynamics
     network_mode: "host"
@@ -24,7 +24,7 @@ services:
 
 # $ docker run -ti --rm --net=host adam2092/rhino-sim-test:v0.0.1 actual_control --cid=113 --cid2=114 --freq=50 --verbose
   actual_control:
-    image: adam2092/rhino-sim-test:v0.0.1
+    image: adam2092/rhino-sim-test:v0.0.2
     depends_on:
     - nominal_dynamics
     network_mode: "host"
