@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
+#include <ctime>
 
 #include "cluon-complete.hpp"
 #include "opendlv-standard-message-set.hpp"
@@ -82,8 +83,8 @@ int32_t main(int32_t argc, char *argv[])
     {
         auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE]() -> bool
             {
-                //gl.scale unused
-                gl.ob_traj(true); // update position of obstacles
+                // update position of obstacles
+                gl.ob_traj(true); 
                 /*if (VERBOSE)
                 {
                     std::cout << "Obstacle status:" << std::endl;
@@ -94,6 +95,10 @@ int32_t main(int32_t argc, char *argv[])
                     }
                 }*/
 
+                // update trajd
+                gl.traj_gen(nom_state);
+
+                // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
                 gl.nosolution = !(correct.hasSolution);
 

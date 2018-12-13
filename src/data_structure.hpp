@@ -251,6 +251,28 @@ public:
             traj_ob[i].vel_x = v;
         }
     }
+
+    void traj_gen(FB_state y) // update trajd
+    {
+        double t = ((double)clock())/CLOCKS_PER_SEC;
+        double ks;
+        if (nosolution)
+        {
+            ks = 0.1;
+            nosolution = false;
+        }
+        else
+        {
+            ks = 0.0;
+        }
+        Eigen::Vector3d err;
+        err << y.epsi, y.ey, y.s;
+        err -= trajd[0]; // tra_com_pre
+        double virtual_time = std::exp(-ks * err.squaredNorm());
+        double v = 20 * virtual_time;
+        trajd[0](2) = v * t; // tra_com_pre
+        trajd[1](2) = v; // tra_com_dot_pre
+    }
 };
 
 
