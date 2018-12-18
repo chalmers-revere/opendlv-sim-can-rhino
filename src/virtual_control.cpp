@@ -19,6 +19,7 @@
 #include <chrono>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <thread>
 #include <ctime>
 
@@ -56,6 +57,25 @@ int32_t main(int32_t argc, char *argv[])
 
     gl.generate_init_ob();
 
+    // Data saving into txt file
+    // number of rows = number of obstacles
+    // each row contains the following data, seperated by tab
+    // pos_x  pos_y  vel_x  vel_y  acc_x  acc_y  radius
+
+    std::ofstream txt("/tmp/data_traj_ob.txt", std::ios::out);
+    if (txt.is_open())
+    {
+        for (uint8_t i = 0; i < gl.no_ob; ++i)
+        {
+            Obstacle curr = gl.traj_ob[i];
+            txt << curr.pos_x << '\t' << curr.pos_y << '\t' << curr.vel_x << '\t' << curr.vel_y << '\t' 
+                << curr.acc_x << '\t' << curr.acc_y << '\t' << curr.radius << '\n';
+        }
+        txt.close();
+    }
+    else std::cerr << "WARNING: Unable to save data into the file <data_traj_ob.txt>." << std::endl;
+
+
     if (VERBOSE)
     {
         std::cout << "Obstacles generated." << std::endl;
@@ -84,16 +104,7 @@ int32_t main(int32_t argc, char *argv[])
         auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE]() -> bool
             {
                 // update position of obstacles
-                gl.ob_traj(true); 
-                /*if (VERBOSE)
-                {
-                    std::cout << "Obstacle status:" << std::endl;
-                    for (uint16_t i = 0; i < gl.no_ob; ++i)
-                    {
-                        std::cout << "No. " << i << " ";
-                        gl.traj_ob[i].print();
-                    }
-                }*/
+                gl.ob_traj(false); 
 
                 // update trajd
                 gl.traj_gen(nom_state);
@@ -119,6 +130,17 @@ int32_t main(int32_t argc, char *argv[])
                 {
                     std::cout << "Message nomU sent: " << std::endl << "[" << msgNomU.acc() << ", " << msgNomU.steer() << "]" << std::endl;
                 }
+
+                // Data saving into txt file
+                // each row contains the following data, seperated by tab
+                // time msgNomU.acc  msgNomU.steer
+                std::ofstream txt2("/tmp/data_msg_nom_u.txt", std::ios::out | std::ios::app);
+                if (txt2.is_open())
+                {
+                    txt2 << ((double)clock())/CLOCKS_PER_SEC << '\t' << msgNomU.acc() << '\t' << msgNomU.steer() << '\n';
+                    txt2.close();
+                }
+                else std::cerr << "WARNING: Unable to save data into the file <data_msg_nom_u.txt>." << std::endl;
                 return false;
             }
         };

@@ -20,6 +20,8 @@
 
 #include <cstdint>
 #include <iostream>
+#include <fstream>
+#include <ctime>
 #include <string>
 #include <thread>
 #include "dynamics_vehicle.h"
@@ -33,16 +35,15 @@ int32_t main(int32_t argc, char **argv) {
     if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq")) || (0 == commandlineArguments.count("cid2") )) {
         std::cerr << argv[0] << " simulates can-rhino." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --cid2=<Second OD4Session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--save_file=/tmp/data_msg_nom_state.txt]" << std::endl;
         std::cerr << "(The second OD4Session is for vehicle state overriding from external source.)" << std::endl;
         retCode = 1;
     } else {
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
         const int16_t FREQ = static_cast<uint16_t>(std::stoi(commandlineArguments["freq"]));
-
-        (void)ID;
-//        (void)VERBOSE;
+        const bool ifSave{commandlineArguments.count("save_file") != 0};
+        auto filename{ifSave ? commandlineArguments["save_file"] : ""};
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
 //        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
@@ -133,7 +134,7 @@ int32_t main(int32_t argc, char **argv) {
 
 
         // Define time triggered lambda function
-        auto Output{[od4, &m_dynamics, &FREQ, &VERBOSE]() -> bool
+        auto Output{[od4, &m_dynamics, &FREQ, &VERBOSE, &ifSave, &filename]() -> bool
             {
                 uint16_t inner_freq = 1000 / FREQ;
                 m_dynamics.T_samp = 0.001;  //sampling time
@@ -176,6 +177,25 @@ int32_t main(int32_t argc, char **argv) {
 
                 od4->send(nomStateMsg);
                 if (VERBOSE) std::cout << "Current nominal states sent." << std::endl;
+
+                // Data saving into txt file (if "save_file" indicated)
+                // number of rows = length of time 
+                // each row contains the following data, seperated by tab: 
+                // time nomStateMsg(all attributes)
+                if (ifSave)
+                {
+                    std::ofstream txt(filename, std::ios::out | std::ios::app);
+                    if (txt.is_open())
+                    {
+                        txt << ((double)clock())/CLOCKS_PER_SEC << '\t'
+                            << nomStateMsg.xp_dot() << '\t' << nomStateMsg.yp_dot() << '\t' 
+                            << nomStateMsg.psi_dot() << '\t' << nomStateMsg.epsi() << '\t' 
+                            << nomStateMsg.ey() << '\t' << nomStateMsg.s() << '\t' 
+                            << nomStateMsg.steer() << '\t' << nomStateMsg.acc() << '\n';
+                        txt.close();
+                    }
+                    else std::cerr << "WARNING: Unable to save data into the file <" << filename << ">." << std::endl;
+                }
 
                 return false;
 

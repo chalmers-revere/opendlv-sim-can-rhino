@@ -16,8 +16,10 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <cmath>
+#include <ctime>
 
 #include <Eigen/Dense>
 
@@ -342,6 +344,21 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     }
     out.value_min = value_min;
     out.coef = results_2[0];
+
+    // Data saving into txt file
+    // each row contains the following data, seperated by tab: 
+    // time tra_com(1) tra_com(2)  tra_com_dot(1)  tra_com_dot(2)  tra_com_ddot(1) tra_com_ddot(2)
+    // (index above uses Matlab notation)
+    std::ofstream txt("/tmp/data_safety_certificate.txt", std::ios::out | std::ios::app);
+    if (txt.is_open())
+    {
+        txt << ((double)clock())/CLOCKS_PER_SEC << '\t' 
+            << tra_com(0) << '\t' << tra_com(1) << '\t' 
+            << tra_com_dot(0) << '\t' << tra_com_dot(1) << '\t' 
+            << tra_com_ddot(0) << '\t' << tra_com_ddot(1) << '\n';
+        txt.close();
+    }
+    else std::cerr << "WARNING: Unable to save data into the file <data_safety_certificate.txt>." << std::endl;
 
     return out;
 }
