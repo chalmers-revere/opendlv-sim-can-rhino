@@ -71,8 +71,16 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     
     // parameters and constants
     double ck = 1.0, ey_pos = 3.2, ey_neg = -3.2, a_m = 4.0;
-    double a = 1.41, b = 1.576, mu = 0.5, Fzf = 21940.0/2, Fzr = 21940.0/2;
-    double cf = 65000.0, cr = 65000.0, m = 2194.0, Iz = 4770.0;
+    //double a = 1.41, b = 1.576, mu = 0.5, Fzf = 21940.0/2, Fzr = 21940.0/2;
+    //double cf = 65000.0, cr = 65000.0, m = 2194.0, Iz = 4770.0;
+		    double a = 1.68, b = 1.715, mu = 3.4812e+05, Fzf = 21940.0/2, Fzr = 21940.0/2;   //yu 
+		/*a(1.68),
+		b(1.715),
+		cf (3.4812e+05),
+		cr (3.5537e+05),
+		m (9840),
+		Iz (41340),*/
+		    double cf = 3.4812e+05, cr = 3.5537e+05, m = 9840.0, Iz = 41340.0;
     double psi_dot_com = 0.0, p = Iz / (m * b);
     // line 140 so far
     
