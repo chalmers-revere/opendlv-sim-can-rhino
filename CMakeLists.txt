@@ -65,12 +65,6 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cluon-msc
     COMMAND ${CMAKE_CXX_COMPILER} -o ${CMAKE_BINARY_DIR}/cluon-msc ${CMAKE_BINARY_DIR}/cluon-complete.cpp -std=c++14 -pthread -D HAVE_CLUON_MSC
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/${CLUON_COMPLETE})
     
-################################################################################
-# <test by Yue Kang>
-# Force cmake to generate cluon-complete.hpp before compilation
-add_custom_target(temp ALL
-    DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc
-)
 # Link qpOASES codes to the executable
 FILE(GLOB qpOASESFiles ${CMAKE_CURRENT_SOURCE_DIR}/src/qpOASES/*.cpp)
 
@@ -93,7 +87,15 @@ add_library(${PROJECT_NAME}-core OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/src/opendlv-
 set(LIBRARIES Threads::Threads)
 
 ################################################################################
+# <test by Yue Kang>
+# Force cmake to generate cluon-complete.hpp before compilation
+add_custom_target(temp ALL
+    DEPENDS ${CMAKE_BINARY_DIR}/cluon-msc ${CMAKE_CURRENT_SOURCE_DIR}/src/opendlv-standard-message-set.hpp
+)
+
+################################################################################
 # Create executables.
+
 # Model (named after the project name itself by default)
 add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
@@ -105,15 +107,24 @@ target_link_libraries(virtual_control ${LIBRARIES})
 # Actual control
 add_executable(actual_control ${CMAKE_CURRENT_SOURCE_DIR}/src/actual_control.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(actual_control ${LIBRARIES})
+
+# Message sender (as temporary data source)
+add_executable(message_sender ${CMAKE_CURRENT_SOURCE_DIR}/src/message_sender.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
+target_link_libraries(message_sender ${LIBRARIES})
+
 ################################################################################
 # Enable unit testing.
 enable_testing()
 add_executable(${PROJECT_NAME}-runner ${CMAKE_CURRENT_SOURCE_DIR}/test/tests-sim-can-rhino.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(${PROJECT_NAME}-runner ${LIBRARIES})
 add_test(NAME ${PROJECT_NAME}-runner COMMAND ${PROJECT_NAME}-runner)
+################################################################################
+# <test by Yue Kang>
+add_dependencies(${PROJECT_NAME}-runner temp)
 
 ################################################################################
 # Install executable.
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ${PROJECT_NAME})
 install(TARGETS virtual_control DESTINATION bin COMPONENT virtual_control)
 install(TARGETS actual_control DESTINATION bin COMPONENT actual_control)
+install(TARGETS message_sender DESTINATION bin COMPONENT message_sender)
