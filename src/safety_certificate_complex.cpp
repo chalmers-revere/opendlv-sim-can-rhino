@@ -40,6 +40,8 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     // Eigen::Vector3d tra_com = tra[0], tra_com_dot = tra[1], tra_com_ddot = tra[2];
     Eigen::Vector3d tra_com = gl.trajd[0], tra_com_dot = gl.trajd[1], tra_com_ddot = gl.trajd[2];
 
+	//gl.print();
+
     // Eigen::Vector3d tra_com_dddot; // unused
     // tra_com_dddot << 0, 0, 0; // unused
 

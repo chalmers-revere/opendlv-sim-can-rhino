@@ -79,12 +79,13 @@ int32_t main(int32_t argc, char **argv) {
                 if (VERBOSE) std::cout << "Steering request received: " << gsr.groundSteering() << " (percentage)" << std::endl;
                 if (gsr.groundSteering() > 1)
                 {
-                    std::cerr << "WARNING: Right steering limit reached. Using max angle instead." << std::endl;
+                   // std::cerr << "WARNING: Right steering limit reached. Using max angle instead." << std::endl;
                     m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING);
                 }
                 else if (gsr.groundSteering() < -1)
                 {
-                    std::cerr << "WARNING: Left steering limit reached. Using max angle instead." << std::endl;
+                   // std::cerr << "WARNING: Left steering limit reached. Using max angle instead." << std::endl;
+                       
                     m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING * (-1));
                 }
                 else
