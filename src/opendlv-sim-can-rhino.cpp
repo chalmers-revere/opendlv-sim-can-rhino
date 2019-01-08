@@ -102,11 +102,11 @@ int32_t main(int32_t argc, char **argv) {
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
                 if (VERBOSE) std::cout << "Nom_U received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
-               // m_dynamics.input_global.acc_x = received.acc();
-                //m_dynamics.input_global.steering_angle = received.steer();
+                m_dynamics.input_global.acc_x = received.acc();
+                m_dynamics.input_global.steering_angle = received.steer();
 
-		m_dynamics.input_global.acc_x = 0.0;
-                m_dynamics.input_global.steering_angle = 0;
+		// m_dynamics.input_global.acc_x = 1.0;
+                // m_dynamics.input_global.steering_angle = 0;
             }
         };
 
@@ -406,7 +406,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 	//double steering_angle = 0;
         //double acc_x = 0;
 
-	std::cout << "input: "  << "[" << input.steering_angle << ", " << input.acc_x <<  "]"<< std::endl;
+	//std::cout << "input: "  << "[" << input.steering_angle << ", " << input.acc_x <<  "]"<< std::endl;
 
 
 

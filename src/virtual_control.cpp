@@ -145,7 +145,8 @@ int32_t main(int32_t argc, char *argv[])
                     msgNomU.steer(correct.x(1));
                 }
 
-		//where is it?  msgNomU
+		//where is it?  msgNomU    
+                //msgNomU.acc(3); msgNomU.steer(4);  //just tunning
                 od4.send(msgNomU);
 
 		
