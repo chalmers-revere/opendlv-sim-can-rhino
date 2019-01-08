@@ -35,7 +35,7 @@ int32_t main(int32_t argc, char **argv) {
     if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq")) || (0 == commandlineArguments.count("cid2") )) {
         std::cerr << argv[0] << " simulates can-rhino." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --cid2=<Second OD4Session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--save_file=/tmp/data_msg_nom_state.txt]" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--nominal] [--verbose] [--save_file=/tmp/data_msg_nom_state.txt]" << std::endl;
         std::cerr << "(The second OD4Session is for vehicle state overriding from external source.)" << std::endl;
         retCode = 1;
     } else {
@@ -44,6 +44,8 @@ int32_t main(int32_t argc, char **argv) {
         const int16_t FREQ = static_cast<uint16_t>(std::stoi(commandlineArguments["freq"]));
         const bool ifSave{commandlineArguments.count("save_file") != 0};
         auto filename{ifSave ? commandlineArguments["save_file"] : ""};
+
+        const bool ifNominal{commandlineArguments.count("nominal") != 0};
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
 //        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
@@ -110,10 +112,17 @@ int32_t main(int32_t argc, char **argv) {
 
         if (od4->isRunning())
         {
-            od4->dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
-            od4->dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
-            od4->dataTrigger(internal::nomU::ID(), Input_NomU);
-//            std::cout << "Data triggered functions attributed." << std::endl;
+            if (ifNominal)
+            {
+                std::cout << "Nominal model detected, receiving only Nom_U." << std::endl;
+                od4->dataTrigger(internal::nomU::ID(), Input_NomU);
+            }
+            else
+            {
+                std::cout << "Vehicle sim model detected, receiving only request messages." << std::endl;
+                od4->dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
+                od4->dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
+            }
         }
 
         auto Input_Override_States{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
