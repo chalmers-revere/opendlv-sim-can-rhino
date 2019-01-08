@@ -36,9 +36,26 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     double epsi = u.epsi, ey = u.ey, s = u.s; 
     double steer = u.steer, acc = u.acc;
 
+ 
+
+
     /* std::vector<Eigen::Vector3d> tra;*/ // used to be in the parameter list
     // Eigen::Vector3d tra_com = tra[0], tra_com_dot = tra[1], tra_com_ddot = tra[2];
     Eigen::Vector3d tra_com = gl.trajd[0], tra_com_dot = gl.trajd[1], tra_com_ddot = gl.trajd[2];
+
+       //tune, 20190108:
+	/*xp_dot = 1, yp_dot = 2, psi_dot = 3;
+      epsi = 4, ey = 5, s = 6; 
+      steer = 1, acc =1;
+      tra_com(1) = 1; 
+       tra_com(2) = 1; 
+       tra_com_dot(1) = 1;
+tra_com_dot(2) =1;  */
+      
+
+    std::cerr << "reference trajactory: " << tra_com(1) << " ," << tra_com(2) << " ,"  << tra_com_dot(1) << " ," << tra_com_dot(2) << " ," << 
+	tra_com_ddot(1) << " ," << tra_com_ddot(2) << " ," <<  std::endl;
+
 
 	//gl.print();
 
@@ -102,15 +119,45 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     k2 << 5 * 3.0187, 0, 0, 5 * 3.0187;
     k3 << 5 * 3.9382, 0, 0, 5 * 3.9382;
 
+
     Eigen::Vector2d u_nom_lin, u_nom;
     Eigen::Vector2d tempV2d, tempTail0, tempTail1, tempTail2;
     tempV2d << ey, s;
     tempTail0 << tra_com(1), tra_com(2);
     tempTail1 << tra_com_dot(1), tra_com_dot(2);
     tempTail2 << tra_com_ddot(1), tra_com_ddot(2);
-    // tra_com_dddot is all-zero, omitted
+    // tra_com_dddot is all-zero, omitted, u_nom(0) is steering angle, u_nom(1) is acc_x
     u_nom_lin = - k1 * ((tempV2d - tempTail0) - k2 * (L_F_output - tempTail1) - k3 * (L_F_F_output - tempTail2));
     u_nom = L_G_L_F_F_output.inverse() * (u_nom_lin - L_F_F_F_output);
+     
+
+
+
+   //20190107: 
+    k1 << 9, 0, 0, 3;
+    k2 << 2*1.414*3, 0, 0, 2*1.414*1.7321;
+
+    Eigen::Vector2d L_f_output, L_f_f_output;
+    L_f_output << yp_dot * cos(epsi) + xp_dot * sin(epsi), xp_dot * cos(epsi) - yp_dot * sin(epsi);
+    if(xp_dot<1e-1) xp_dot = 1e-1;
+	L_f_f_output <<  (psi_dot - psi_dot_com)*(xp_dot*cos(epsi) - yp_dot*sin(epsi)) - cos(epsi)*(psi_dot*xp_dot + (psi_dot*(2*a*cf - 2*b*cr))/         (m*xp_dot) + (yp_dot*(2*cf + 2*cr))/(m*xp_dot)) + psi_dot*yp_dot*sin(epsi), 
+      sin(epsi)*(psi_dot*xp_dot + (psi_dot*(2*a*cf - 2*b*cr))/(m*xp_dot) + (yp_dot*(2*cf + 2*cr))/(m*xp_dot)) - (psi_dot - psi_dot_com)*(yp_dot*cos   (epsi) + xp_dot*sin(epsi)) + psi_dot*yp_dot*cos(epsi);
+    Eigen::Matrix2d L_g_f_output;
+    L_g_f_output << (2*cf*cos(epsi))/m, 
+        sin(epsi), 
+        -(2*cf*sin(epsi))/m, 
+         cos(epsi);
+        //u_nom(0) is steering angle, u_nom(1) is acc_x
+ 
+     u_nom_lin = - k1 * (tempV2d - tempTail0) - k2 * (L_f_output - tempTail1) ;
+     u_nom = L_g_f_output.inverse() * (u_nom_lin - L_f_f_output);
+
+
+   //tune: 
+    //u_nom << 0, 1; 
+
+
+
 
     if (xp_dot < 1e-2) xp_dot = 1e-2;
 
@@ -370,6 +417,10 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
         txt.close();
     }
     else std::cerr << "WARNING: Unable to save data into the file <data_safety_certificate.txt>." << std::endl;
+
+    //tunning, only use the nominal control: 
+    out.x(0) = u_nom(0);
+    out.x(1) = u_nom(1);
 
     return out;
 }

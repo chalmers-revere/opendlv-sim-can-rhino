@@ -48,7 +48,7 @@ int32_t main(int32_t argc, char *argv[])
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-    FB_state nom_state(4.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(8.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 
@@ -121,13 +121,16 @@ int32_t main(int32_t argc, char *argv[])
                 gl.ob_traj(false); 
 
                 // update trajd
-                gl.traj_gen(nom_state);
+                //gl.traj_gen(nom_state);
+
+                //20190108:
+		gl.trajd[0](2) = gl.trajd[0](2) + 15*0.02;  
 
                 // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
 
 		//tunning, why always the same? 20190103
-		std::cout << "current state:" << std::endl;
+		std::cout << "current state in virtual control:" << std::endl;
                 nom_state.print(); 
 
                 gl.nosolution = !(correct.hasSolution);
@@ -141,9 +144,13 @@ int32_t main(int32_t argc, char *argv[])
                 }
                 else
                 {
-                    msgNomU.acc(correct.x(0));
-                    msgNomU.steer(correct.x(1));
+                    msgNomU.acc(correct.x(1));
+                    msgNomU.steer(correct.x(0));
                 }
+
+                //20190107, tune, notice the order:                 
+                msgNomU.steer(correct.x(0));
+		msgNomU.acc(correct.x(1));
 
 		//where is it?  msgNomU    
                 //msgNomU.acc(3); msgNomU.steer(4);  //just tunning
