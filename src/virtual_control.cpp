@@ -44,7 +44,7 @@ int32_t main(int32_t argc, char *argv[])
     {
         std::cerr << "WARNING: No frequency assigned, using 50 by default ('--freq=50')." << std::endl;
     }
-    else CID = std::stoi(commandlineArguments["freq"]);
+    else FREQ = std::stoi(commandlineArguments["freq"]);
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
@@ -82,6 +82,8 @@ int32_t main(int32_t argc, char *argv[])
     }
 
     cluon::OD4Session od4(CID, [&nom_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
+        std::cout << "Received message:" << env.dataType() << std::endl;
+
         if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
