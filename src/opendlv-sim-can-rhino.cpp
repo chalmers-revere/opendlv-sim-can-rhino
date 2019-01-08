@@ -80,13 +80,13 @@ int32_t main(int32_t argc, char **argv) {
                 if (gsr.groundSteering() > 1)
                 {
                    // std::cerr << "WARNING: Right steering limit reached. Using max angle instead." << std::endl;
-                    m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING);
+                   m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING);
                 }
                 else if (gsr.groundSteering() < -1)
                 {
                    // std::cerr << "WARNING: Left steering limit reached. Using max angle instead." << std::endl;
                        
-                    m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING * (-1));
+                   m_dynamics.SetRoadWheelAngle(m_dynamics.MAX_STEERING * (-1));
                 }
                 else
                 {
@@ -100,8 +100,11 @@ int32_t main(int32_t argc, char **argv) {
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
                 if (VERBOSE) std::cout << "Nom_U received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
-                m_dynamics.input_global.acc_x = received.acc();
-                m_dynamics.input_global.steering_angle = received.steer();
+               // m_dynamics.input_global.acc_x = received.acc();
+                //m_dynamics.input_global.steering_angle = received.steer();
+
+		m_dynamics.input_global.acc_x = 0.0;
+                m_dynamics.input_global.steering_angle = 0;
             }
         };
 
@@ -116,7 +119,7 @@ int32_t main(int32_t argc, char **argv) {
         auto Input_Override_States{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
             {
                 internal::nomState ext_state = cluon::extractMessage<internal::nomState>(std::move(env));
-                if (VERBOSE) std::cout << "External overriding states received: " << std::endl \
+                if (VERBOSE) std::cout << "External overriding states received: " 
                     << "[" << ext_state.xp_dot() << ", " << ext_state.yp_dot() << ", " << ext_state.psi_dot() << ", " << ext_state.epsi() << ", " \
                     << ext_state.ey() << ", " << ext_state.s() << ", " << ext_state.steer() << ", " << ext_state.acc() << "]" << std::endl;
                 m_dynamics.state_global.epsi = ext_state.epsi();
@@ -187,7 +190,9 @@ int32_t main(int32_t argc, char **argv) {
                 nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
 
                 od4->send(nomStateMsg);
-                if (VERBOSE) std::cout << "Current nominal states sent." << std::endl;
+                if (VERBOSE) std::cout << "Current nominal states sent: " 	
+                   << "[" << nomStateMsg.xp_dot() << ", " << nomStateMsg.yp_dot() << ", " << nomStateMsg.psi_dot() << ", " << nomStateMsg.epsi() << ", " \
+                   << nomStateMsg.ey() << ", " << nomStateMsg.s() << ", " << nomStateMsg.steer() << ", " << nomStateMsg.acc() << "]" << std::endl;
 
                 // Data saving into txt file (if "save_file" indicated)
                 // number of rows = length of time 
@@ -388,6 +393,13 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
         //double B_ped = input.B_ped;  //brake
 	double steering_angle = input.steering_angle;
         double acc_x = input.acc_x;
+
+	//double steering_angle = 0;
+        //double acc_x = 0;
+
+	std::cout << "input: "  << "[" << input.steering_angle << ", " << input.acc_x <<  "]"<< std::endl;
+
+
 
 	/////////////////////////states/////////////////////////////////////
 	//the velocity of the vehicle, expressed in the body frame of the vehicle

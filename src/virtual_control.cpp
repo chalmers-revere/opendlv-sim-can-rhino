@@ -102,8 +102,8 @@ int32_t main(int32_t argc, char *argv[])
             {
 
                //20190103, where is the nom_state? cannot see it. 
-                std::cout << "New nom_state received:" << std::endl;
-                nom_state.print(); 
+               // std::cout << "New nom_state received:" << std::endl;
+               // nom_state.print(); 
             }
         }
     });
