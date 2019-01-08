@@ -96,10 +96,20 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
+        auto Input_NomU{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+            {
+                internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
+                if (VERBOSE) std::cout << "Nom_U received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
+                m_dynamics.input_global.acc_x = received.acc();
+                m_dynamics.input_global.steering_angle = received.steer();
+            }
+        };
+
         if (od4->isRunning())
         {
             od4->dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
             od4->dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
+            od4->dataTrigger(internal::nomU::ID(), Input_NomU);
 //            std::cout << "Data triggered functions attributed." << std::endl;
         }
 
