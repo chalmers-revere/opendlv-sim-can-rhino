@@ -85,7 +85,17 @@ int32_t main(int32_t argc, char *argv[])
         if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
-            nom_state = FB_state(received.xp_dot(), received.yp_dot(), received.psi_dot(), received.epsi(), received.ey(), received.s(), received.steer(), received.acc());
+            // nom_state = FB_state(received.xp_dot(), received.yp_dot(), received.psi_dot(), 
+            //    received.epsi(), received.ey(), received.s(), received.steer(), received.acc());
+            nom_state.xp_dot = received.xp_dot();
+            nom_state.yp_dot = received.yp_dot();
+            nom_state.psi_dot = received.psi_dot();
+            nom_state.epsi = received.epsi();
+            nom_state.ey = received.ey();
+            nom_state.s = received.s();
+            nom_state.steer = received.steer();
+            nom_state.acc = received.acc();
+
             if (VERBOSE)
             {
                 std::cout << "New nom_state received:" << std::endl;
