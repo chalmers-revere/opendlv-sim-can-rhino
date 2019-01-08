@@ -98,6 +98,8 @@ int32_t main(int32_t argc, char *argv[])
 
             if (VERBOSE)
             {
+
+               //20190103, where is the nom_state? cannot see it. 
                 std::cout << "New nom_state received:" << std::endl;
                 nom_state.print(); 
             }
@@ -121,12 +123,17 @@ int32_t main(int32_t argc, char *argv[])
 
                 // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
+
+		//tunning, why always the same? 20190103
+		std::cout << "current state:" << std::endl;
+                nom_state.print(); 
+
                 gl.nosolution = !(correct.hasSolution);
 
                 internal::nomU msgNomU;
                 if (gl.nosolution)
                 {
-                    std::cerr << "WARNING: No solution detected from solver!!" << std::endl;
+                    // std::cerr << "WARNING: No solution detected from solver!!" << std::endl;
                     msgNomU.acc(0.0);
                     msgNomU.steer(0.0);
                 }
@@ -135,9 +142,13 @@ int32_t main(int32_t argc, char *argv[])
                     msgNomU.acc(correct.x(0));
                     msgNomU.steer(correct.x(1));
                 }
+
+		//where is it?  msgNomU
                 od4.send(msgNomU);
+
+		
                 if (VERBOSE)
-                {
+                {	            
                     std::cout << "Message nomU sent: " << std::endl << "[" << msgNomU.acc() << ", " << msgNomU.steer() << "]" << std::endl;
                 }
 
