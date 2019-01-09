@@ -44,7 +44,8 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     }
     if (ob_array.size() == 0)
         ob_array.push_back(traj_ob[traj_ob.size() - 1]);
-    
+
+        
 //    vector<double> dis_2_vehicle;
 //    for (int i = 0; i < ob_array.size(); i++)
 //    {
@@ -65,6 +66,8 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     {
         if (abs(ob_array[0].pos_x - ob_array[1].pos_x) < 0.0001)
             ob_array[1].pos_x += (abs(ob_array[1].pos_x) >= (abs(ob_array[1].pos_y))) ? -0.01 : 0.01;
+	
+	
     }
     
     gl.dead = false;
@@ -170,7 +173,9 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             // line 238 so far
 
             pos_ob_y = (abs(pos_ob_y) < 0.0001) ? pos_ob_y / abs(pos_ob_y) * 0.0001 : pos_ob_y;
-            epsi = (abs(epsi) < 0.00001) ? epsi / abs(epsi) * 0.00001 : epsi;
+
+	    if (epsi!=0)
+            epsi = (abs(epsi) < 0.00001) ? epsi / abs(epsi) * 0.00001 : epsi;  //not correct if epsi = 0
             // line 249 so far
 
             double L_f_h_ang_part1 = -((psi_dot - psi_dot_com) 
@@ -315,7 +320,22 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             double L_f_h_ang = L_f_h_ang_part1 - asin_dot * temp_d * L_f_h_ang_part2;
             double L_g_h_ang = L_g_h_ang_part1 - asin_dot * temp_d * L_g_h_ang_part2;
             double L_t_h_ang = L_t_h_ang_part1 - asin_dot * temp_d * L_t_h_ang_part2;
+
             // line 288 so far
+
+
+            //tune:
+            std::cout << "pos_ob_y: " << pos_ob_y << std::endl;
+            std::cout << "epsi: " << epsi << std::endl; 
+	    std::cout << "L_f_h_ang_part1: " << L_f_h_ang_part1 << std::endl;
+            std::cout << "L_f_h_ang_part2: " << L_f_h_ang_part2 << std::endl;
+            std::cout << "L_g_h_ang_part1: " << L_g_h_ang_part1 << std::endl;
+            std::cout << "L_g_h_ang_part2: " << L_g_h_ang_part2 << std::endl;
+	    std::cout << "L_t_h_ang_part1: " << L_t_h_ang_part1 << std::endl;
+	    std::cout << "L_t_h_ang_part2: " << L_t_h_ang_part2 << std::endl;
+            std::cout << "L_f_h_ang: " << L_f_h_ang << std::endl;
+            std::cout << "L_g_h_ang: " << L_g_h_ang << std::endl;
+            std::cout << "L_t_h_ang: " << L_t_h_ang << std::endl;
 
             A_n_angle_fix(0) = - L_g_h_ang;
             b_n_angle_fix = b_n_angle_fix = L_f_h_ang + L_t_h_ang + 3 * h_ang;
@@ -431,6 +451,13 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
         c.radius = ob_array[i].radius;
 
         res.push_back(c);
+
+	//tune: 
+	std::cout << "current state in constraint:" << std::endl;
+	u.print();
+	std::cerr << "No of obstacles: " << ob_array.size()  <<  std::endl;
+	ob_array[0].print();
+	c.print();
 
     } // for each ob in ob_array
     return res;

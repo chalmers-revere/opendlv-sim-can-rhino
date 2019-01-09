@@ -341,7 +341,7 @@ for i_ob =1:no_ob_active
         
         %cbf:
         a2 =  9;   a1=2*1.414*sqrt(a2);
-        A_n_angle_fix = [-L_g_h_ang*ka, 0];
+%         A_n_angle_fix = [-L_g_h_ang*ka, 0];
         b_n_angle_fix = p_x_p_Lgh_baru*(f_x+g_x*steer)-L_g_h_ang*ka*steer + L_f_L_f_h_ang + L_g_L_f_h_ang*steer + L_f_L_t_h_ang + ...
             a1*(L_f_h_ang + L_t_h_ang + L_g_h_ang*steer) + a2*h_ang; 
         %%%%%%%%%%%20181011, consider the actuator dynamics, calculated

@@ -156,6 +156,14 @@ public:
     Eigen::Vector2d A_n_side_neg;
     double b_n_side_neg{0.0};
     double radius{0.0};
+
+    void print()
+    {
+        std::cout << "constraint(norm_relpos, angle):" << this->norm_relpos << ", " << this->h_angle_fix  << ", " << this->A_n_angle_fix(0) << ", "  << this->A_n_angle_fix(1)<< ", " << this->b_n_angle_fix << std::endl;
+	std::cout << "constraint(distance): "  << this->h_dis<< ", "   <<  this->A_n_dis(0) << ", " << this->A_n_dis(1) << ", " << this->b_n_dis << std::endl;
+	std::cout << "constraint(postive side): "  << this->h_sid_pos   <<  this->A_n_side_pos(0) << ", " << this->A_n_side_pos(1) << ", " << this->b_n_side_pos << std::endl;
+	std::cout << "constraint(negative side): " << this->h_sid_neg   <<  this->A_n_side_neg(0) << ", " << this->A_n_side_neg(1) << ", " << this->b_n_side_neg << std::endl;
+    }
 };
 
 class Output_safety // the return value output_safety.out, line 355-359 in safety_cert~.m
@@ -184,7 +192,7 @@ public:
 
     // the following three are initialised by constraint_obstacles.m
     std::vector<Obstacle> traj_ob{};
-    int no_ob{2};
+    int no_ob{1};
     // vector<Eigen::Vector2d> pos_ob_array_pre;
     // vector<double> radius_pre;
 
@@ -235,6 +243,11 @@ public:
                 curr.radius = 2 + 1.5 * (double)rand() / RAND_MAX;
                 curr.pos_x = 80 + 100 * (double)rand() / RAND_MAX;
                 curr.pos_y = -1.7 + 3.4 * (double)rand() / RAND_MAX;
+
+		//tune 20190110:
+		curr.radius = 2.1; 
+		curr.pos_x = 90.11;
+		curr.pos_y = 0.342;
             }
             while (curr.isConf(traj_ob));
             traj_ob.push_back(curr);

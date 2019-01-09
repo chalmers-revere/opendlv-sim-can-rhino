@@ -171,6 +171,12 @@ tra_com_dot(2) =1;  */
     gl.dead = false;
     // line 83 so far
 
+    
+// tune 20190110:
+    //[15.8828, 0, 0, 0, 0, 18.1959, 0, 0];
+    u.xp_dot =15.8828;   u.yp_dot = 0.6; u.psi_dot = 2;
+    u.epsi = 1;  u.ey = 0.3;  u.s = 18.1959;  
+
     vector<Coefficient> results_2 = constraint_obstacles_dynamics_complex(u, gl);
 
     int no_ob_active = results_2.size();
