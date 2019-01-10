@@ -290,6 +290,8 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
                 * pow(pow(pos_ob_x - s, 2) + pow(ey - pos_ob_y, 2), 1.5) 
                 * pow(pow(vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi), 2) 
                     + pow(yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi), 2), 1.5));
+
+
             // line 270 so far
             double L_g_h_ang_part1 = (2 * cf * (vel_ob_x * cos(epsi) - xp_dot + vel_ob_y * sin(epsi)) 
                     * (ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y - ey * xp_dot * cos(epsi) 
@@ -325,6 +327,11 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
 
 
             //tune:
+            std::cout << "vel_ob_x: " << vel_ob_x << std::endl;
+            std::cout << "vel_ob_y: " << vel_ob_y << std::endl;
+            std::cout << "acc_ob_x: " << acc_ob_x << std::endl;
+            std::cout << "acc_ob_y: " << acc_ob_y << std::endl;
+            std::cout << "pos_ob_x: " << pos_ob_x << std::endl;
             std::cout << "pos_ob_y: " << pos_ob_y << std::endl;
             std::cout << "epsi: " << epsi << std::endl; 
 	    std::cout << "L_f_h_ang_part1: " << L_f_h_ang_part1 << std::endl;

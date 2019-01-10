@@ -149,6 +149,16 @@ Iz = 4770;
 psi_dot_com = 0;
 p =Iz/(m*b);
 
+
+%constants: 
+      ck = 1.0; ey_pos = 3.2; ey_neg = -3.2; a_m = 4.0;
+ 
+		      a = 1.68; b = 1.715; mu = 3.4812e+05; Fzf = 21940.0/2; Fzr = 21940.0/2;     
+ 
+		      cf = 3.4812e+05; cr = 3.5537e+05; m = 9840.0; Iz = 41340.0;
+      psi_dot_com = 0.0;  p = Iz / (m * b);
+
+
 h_sid_pos = ey_pos - ey - (yp_dot*cos(epsi) + xp_dot*sin(epsi))^2/(2*a_m);
 % L_f_h_sid_pos = ((yp_dot*cos(epsi) + xp_dot*sin(epsi))*(2*cf*yp_dot*cos(epsi) + 2*cr*yp_dot*cos(epsi) - a_m*m*xp_dot + 2*a*cf*psi_dot*cos(epsi) - 2*b*cr*psi_dot*cos(epsi) + m*psi_dot_com*xp_dot^2*cos(epsi) - m*psi_dot_com*xp_dot*yp_dot*sin(epsi)))/(a_m*m*xp_dot); 
 % L_g_h_sid_pos = [ -(2*cf*cos(epsi)*(yp_dot*cos(epsi) + xp_dot*sin(epsi)))/(a_m*m), -(sin(epsi)*(yp_dot*cos(epsi) + xp_dot*sin(epsi)))/a_m];
@@ -212,17 +222,17 @@ for i_ob =1:no_ob_active
     
 %     Ds = 1.2;  %the radius of obstacle 
     %constants: 
-    a = 1.41; 
-    b = 1.576; 
-    mu =0.5; 
-    Fzf = 21940/2; 
-    Fzr = 21940/2; 
-    cf = 65000; 
-    cr = 65000; 
-    m = 2194; 
-    Iz = 4770; 
-    psi_dot_com = 0;
-    p =Iz/(m*b);
+%     a = 1.41; 
+%     b = 1.576; 
+%     mu =0.5; 
+%     Fzf = 21940/2; 
+%     Fzr = 21940/2; 
+%     cf = 65000; 
+%     cr = 65000; 
+%     m = 2194; 
+%     Iz = 4770; 
+%     psi_dot_com = 0;
+%     p =Iz/(m*b);
         
  %% August 3th, angle constraint for obstacles, 
         %constraint 1, angle constraint, test:  
@@ -342,8 +352,8 @@ for i_ob =1:no_ob_active
         %cbf:
         a2 =  9;   a1=2*1.414*sqrt(a2);
 %         A_n_angle_fix = [-L_g_h_ang*ka, 0];
-        b_n_angle_fix = p_x_p_Lgh_baru*(f_x+g_x*steer)-L_g_h_ang*ka*steer + L_f_L_f_h_ang + L_g_L_f_h_ang*steer + L_f_L_t_h_ang + ...
-            a1*(L_f_h_ang + L_t_h_ang + L_g_h_ang*steer) + a2*h_ang; 
+%         b_n_angle_fix = p_x_p_Lgh_baru*(f_x+g_x*steer)-L_g_h_ang*ka*steer + L_f_L_f_h_ang + L_g_L_f_h_ang*steer + L_f_L_t_h_ang + ...
+%             a1*(L_f_h_ang + L_t_h_ang + L_g_h_ang*steer) + a2*h_ang; 
         %%%%%%%%%%%20181011, consider the actuator dynamics, calculated
          %%%%%%%%%%%from%%%%%%%%%%%
          
@@ -532,7 +542,7 @@ for i_ob =1:no_ob_active
     out(i_ob).h_sid_pos = h_sid_pos;
     out(i_ob).A_n_side_pos = A_n_side_pos;
     out(i_ob).b_n_side_pos = b_n_side_pos;
-    out(i_ob).h_sid_pos = h_sid_neg;
+    out(i_ob).h_sid_neg = h_sid_neg;
     out(i_ob).A_n_side_neg = A_n_side_neg;
     out(i_ob).b_n_side_neg = b_n_side_neg;
     out(i_ob).radius = radius_array(i_ob);
