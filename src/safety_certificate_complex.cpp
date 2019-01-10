@@ -174,8 +174,11 @@ tra_com_dot(2) =1;  */
     
 // tune 20190110:
     //[15.8828, 0, 0, 0, 0, 18.1959, 0, 0];
-    u.xp_dot =15.8828;   u.yp_dot = 0.6; u.psi_dot = 2;
-    u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;  
+    u.xp_dot =15.87;   u.yp_dot = 0.6; u.psi_dot =0.223;
+    u.epsi = 0.7665;  u.ey = 2.3;  u.s = 5.98959;  
+
+    u.xp_dot =15.8828;   u.yp_dot = 0.6; u.psi_dot = 0.1;
+    u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;
 
 	//std::cout << "current state in safety_certificate:" << std::endl;
 	//u.print();

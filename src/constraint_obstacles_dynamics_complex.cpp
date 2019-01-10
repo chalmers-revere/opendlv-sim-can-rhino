@@ -113,7 +113,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     if ((h_sid_pos > 0) && (temp_d < 0))
     {
         A_n_side_pos << 0, 0;
-        b_n_side_pos - 1;
+        b_n_side_pos = 1;
     }
     else
     {
@@ -124,7 +124,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     if ((h_sid_neg > 0) && (temp_d > 0))
     {
         A_n_side_neg << 0, 0;
-        b_n_side_neg - 1;
+        b_n_side_neg = 1;
     }
     else
     {
@@ -240,10 +240,69 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
                     * pow(pow(vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi), 2) 
                         + pow(yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi), 2), 1.5));
             // line 269 so far
-            double L_t_h_ang_part1 = -((ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y 
-                    - ey * xp_dot * cos(epsi) + pos_ob_y * xp_dot * cos(epsi) - pos_ob_x * yp_dot * cos(epsi) 
-                    + s * yp_dot * cos(epsi) + ey * yp_dot * sin(epsi) - pos_ob_x * xp_dot * sin(epsi) 
-                    - pos_ob_y * yp_dot * sin(epsi) + s * xp_dot * sin(epsi)) 
+
+
+//            double L_f_h_ang_part1_tune = -((psi_dot - psi_dot_com)
+//                    * (pow(xp_dot, 2) + pow(yp_dot, 2) - vel_ob_x * xp_dot * cos(epsi) - vel_ob_y * yp_dot * cos(epsi)
+//                        - vel_ob_y * xp_dot * sin(epsi) + vel_ob_x * yp_dot * sin(epsi))
+//                    * (ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y
+//                        - ey * xp_dot * cos(epsi) + pos_ob_y * xp_dot * cos(epsi)
+//                        - pos_ob_x * yp_dot * cos(epsi) + s * yp_dot * cos(epsi)
+//                        + ey * yp_dot * sin(epsi) - pos_ob_x * xp_dot * sin(epsi)
+//                        - pos_ob_y * yp_dot * sin(epsi) + s * xp_dot * sin(epsi)))
+//                        / (sqrt(1 - pow(((pos_ob_x - s) * (vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi))
+//                                           + (ey - pos_ob_y) * (yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi))), 2)
+//                                           / ((pow(pos_ob_x - s, 2) + pow(ey - pos_ob_y, 2))
+//                                               * (pow(vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi), 2)
+//                                               + pow(yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi), 2))))
+//                                           * sqrt(pow(pos_ob_x - s, 2) + pow(ey - pos_ob_y, 2))
+//                                               * pow(pow(vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi), 2)
+//                                               + pow(yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi), 2), 1.5))
+//	   - ((ey - pos_ob_y) * (xp_dot * cos(epsi) - yp_dot * sin(epsi))
+//					   * (ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y
+//						   - ey * xp_dot * cos(epsi) + pos_ob_y * xp_dot * cos(epsi)
+//						   - pos_ob_x * yp_dot * cos(epsi) + s * yp_dot * cos(epsi)
+//						   + ey * yp_dot * sin(epsi) - pos_ob_x * xp_dot * sin(epsi)
+//						   - pos_ob_y * yp_dot * sin(epsi) + s * xp_dot * sin(epsi)));
+
+            double L_f_h_ang_part1_tune;
+       /*     L_f_h_ang_part1_tune = sqrt(1 - pow((pos_ob_x - s) * (vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi))
+                    + (ey - pos_ob_y) * (yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi)), 2)
+                    / ((pow(pos_ob_x - s, 2) + pow(ey - pos_ob_y, 2))
+                        * (pow(vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi), 2)
+                            + (yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi), 2))))
+            * pow(pow(pos_ob_x - s, 2) + pow(ey - pos_ob_y, 2), 1.5)
+            * sqrt(pow(vel_ob_x - xp_dot * cos(epsi) + yp_dot * sin(epsi), 2)
+                + pow(yp_dot * cos(epsi) - vel_ob_y + xp_dot * sin(epsi), 2))；*/
+
+
+//            L_f_h_ang_part1 = - ((psi_dot - psi_dot_com)
+//            		*(xp_dot^2 + yp_dot^2 - vel_ob_x*xp_dot*cos(epsi) - vel_ob_y*yp_dot*cos(epsi)
+//            - vel_ob_y*xp_dot*sin(epsi) + vel_ob_x*yp_dot*sin(epsi))*(ey*vel_ob_x + pos_ob_x*vel_ob_y -
+//            		pos_ob_y*vel_ob_x - s*vel_ob_y - ey*xp_dot*cos(epsi) + pos_ob_y*xp_dot*cos(epsi) - pos_ob_x*yp_dot*cos(epsi)
+//            + s*yp_dot*cos(epsi) + ey*yp_dot*sin(epsi) - pos_ob_x*xp_dot*sin(epsi) - pos_ob_y*yp_dot*sin(epsi) + s*xp_dot*sin(epsi)))
+//            /((1 - ((pos_ob_x - s)*(vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi)) + (ey - pos_ob_y)*(yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi)))^2/(((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)))^(1/2)*((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)^(1/2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)^(3/2))
+//            - ((ey - pos_ob_y)*(xp_dot*cos(epsi) - yp_dot*sin(epsi))*(ey*vel_ob_x + pos_ob_x*vel_ob_y - pos_ob_y*vel_ob_x - s*vel_ob_y - ey*xp_dot*cos(epsi) + pos_ob_y*xp_dot*cos(epsi) - pos_ob_x*yp_dot*cos(epsi) + s*yp_dot*cos(epsi) + ey*yp_dot*sin(epsi) - pos_ob_x*xp_dot*sin(epsi) - pos_ob_y*yp_dot*sin(epsi) + s*xp_dot*sin(epsi)))
+//            /((1 - ((pos_ob_x - s)*(vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi)) + (ey - pos_ob_y)*(yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi)))^2/(((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)))^(1/2)*((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)^(3/2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)^(1/2))
+//            - ((pos_ob_x - s)*(yp_dot*cos(epsi) + xp_dot*sin(epsi))*(ey*vel_ob_x + pos_ob_x*vel_ob_y - pos_ob_y*vel_ob_x - s*vel_ob_y - ey*xp_dot*cos(epsi) + pos_ob_y*xp_dot*cos(epsi) - pos_ob_x*yp_dot*cos(epsi) + s*yp_dot*cos(epsi) + ey*yp_dot*sin(epsi) - pos_ob_x*xp_dot*sin(epsi) - pos_ob_y*yp_dot*sin(epsi) + s*xp_dot*sin(epsi)))/((1 - ((pos_ob_x - s)*(vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi)) + (ey - pos_ob_y)*(yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi)))^2/(((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)))^(1/2)*((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)^(3/2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)^(1/2)) - ((vel_ob_x*cos(epsi) - xp_dot + vel_ob_y*sin(epsi))*(m*psi_dot*xp_dot^2 + 2*cf*yp_dot + 2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot)*(ey*vel_ob_x + pos_ob_x*vel_ob_y - pos_ob_y*vel_ob_x - s*vel_ob_y - ey*xp_dot*cos(epsi) + pos_ob_y*xp_dot*cos(epsi) - pos_ob_x*yp_dot*cos(epsi) + s*yp_dot*cos(epsi) + ey*yp_dot*sin(epsi) - pos_ob_x*xp_dot*sin(epsi) - pos_ob_y*yp_dot*sin(epsi) + s*xp_dot*sin(epsi)))/(m*xp_dot*(1 - ((pos_ob_x - s)*(vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi)) + (ey - pos_ob_y)*(yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi)))^2/(((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)))^(1/2)*((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)^(1/2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)^(3/2));
+
+
+            std::cout << "vel_ob_x: " << vel_ob_x << std::endl;
+            std::cout << "vel_ob_y: " << vel_ob_y << std::endl;
+            std::cout << "acc_ob_x: " << acc_ob_x << std::endl;
+            std::cout << "acc_ob_y: " << acc_ob_y << std::endl;
+            std::cout << "pos_ob_x: " << pos_ob_x << std::endl;
+            std::cout << "pos_ob_y: " << pos_ob_y << std::endl;
+            std::cout << "epsi: " << epsi << std::endl;
+            std::cout << "ey: " << ey << std::endl;
+            std::cout << "s: " << s << std::endl;
+            std::cout << "L_f_h_ang_part1_tune: " << L_f_h_ang_part1_tune << std::endl;
+
+
+                                double L_t_h_ang_part1 = -((ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y
+                    - ey * xp_dot * cos(epsi) + pos_ob_y * xp_dot * cos(epsi) - pos_ob_x * yp_dot * cos(epsi)
+                    + s * yp_dot * cos(epsi) + ey * yp_dot * sin(epsi) - pos_ob_x * xp_dot * sin(epsi)
+                    - pos_ob_y * yp_dot * sin(epsi) + s * xp_dot * sin(epsi))
                 * (pos_ob_y * pow(vel_ob_x, 3) - pos_ob_x * pow(vel_ob_y, 3) - ey * pow(vel_ob_x, 3) 
                     + s * pow(vel_ob_y, 3) - acc_ob_x * pow(pos_ob_x, 2) * vel_ob_y 
                     + acc_ob_y * pow(pos_ob_x, 2) * vel_ob_x - acc_ob_x * pow(pos_ob_y, 2) * vel_ob_y 
@@ -327,19 +386,12 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
 
 
             //tune:
-            std::cout << "vel_ob_x: " << vel_ob_x << std::endl;
-            std::cout << "vel_ob_y: " << vel_ob_y << std::endl;
-            std::cout << "acc_ob_x: " << acc_ob_x << std::endl;
-            std::cout << "acc_ob_y: " << acc_ob_y << std::endl;
-            std::cout << "pos_ob_x: " << pos_ob_x << std::endl;
-            std::cout << "pos_ob_y: " << pos_ob_y << std::endl;
-            std::cout << "epsi: " << epsi << std::endl; 
-	    std::cout << "L_f_h_ang_part1: " << L_f_h_ang_part1 << std::endl;
+            std::cout << "L_f_h_ang_part1: " << L_f_h_ang_part1 << std::endl;
             std::cout << "L_f_h_ang_part2: " << L_f_h_ang_part2 << std::endl;
             std::cout << "L_g_h_ang_part1: " << L_g_h_ang_part1 << std::endl;
             std::cout << "L_g_h_ang_part2: " << L_g_h_ang_part2 << std::endl;
-	    std::cout << "L_t_h_ang_part1: " << L_t_h_ang_part1 << std::endl;
-	    std::cout << "L_t_h_ang_part2: " << L_t_h_ang_part2 << std::endl;
+            std::cout << "L_t_h_ang_part1: " << L_t_h_ang_part1 << std::endl;
+            std::cout << "L_t_h_ang_part2: " << L_t_h_ang_part2 << std::endl;
             std::cout << "L_f_h_ang: " << L_f_h_ang << std::endl;
             std::cout << "L_g_h_ang: " << L_g_h_ang << std::endl;
             std::cout << "L_t_h_ang: " << L_t_h_ang << std::endl;
@@ -358,8 +410,11 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             gl.dead = true;
             dis_maxacc_sqr = 0.000001;
         }
+std::cout << "dis_maxacc_sqr: " << dis_maxacc_sqr << std::endl;
+std::cout << "rel_pos: " << rel_pos[0] << ", "  << rel_pos[1] << ", " << std::endl;
+std::cout << "rel_vel: " << rel_vel[0] << ", "  << rel_vel[1] << ", " << std::endl;
 
-        double h_vel = sqrt(dis_maxacc_sqr) + (rel_pos.adjoint() * rel_vel)(0) / rel_vel.norm();
+        double h_vel = sqrt(dis_maxacc_sqr) + (rel_pos.adjoint() * rel_vel)(0) / rel_pos.norm();
         // line 318 so far
 
         double L_f_h_norm = ((ey - pos_ob_y) * (yp_dot * cos(epsi) + xp_dot * sin(epsi))) 

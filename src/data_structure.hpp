@@ -161,8 +161,8 @@ public:
     {
         std::cout << "constraint(norm_relpos, angle):" << this->norm_relpos << ", " << this->h_angle_fix  << ", " << this->A_n_angle_fix(0) << ", "  << this->A_n_angle_fix(1)<< ", " << this->b_n_angle_fix << std::endl;
 	std::cout << "constraint(distance): "  << this->h_dis<< ", "   <<  this->A_n_dis(0) << ", " << this->A_n_dis(1) << ", " << this->b_n_dis << std::endl;
-	std::cout << "constraint(postive side): "  << this->h_sid_pos   <<  this->A_n_side_pos(0) << ", " << this->A_n_side_pos(1) << ", " << this->b_n_side_pos << std::endl;
-	std::cout << "constraint(negative side): " << this->h_sid_neg   <<  this->A_n_side_neg(0) << ", " << this->A_n_side_neg(1) << ", " << this->b_n_side_neg << std::endl;
+	std::cout << "constraint(postive side): "  << this->h_sid_pos << ", "   <<  this->A_n_side_pos(0) << ", " << this->A_n_side_pos(1) << ", " << this->b_n_side_pos << std::endl;
+	std::cout << "constraint(negative side): " << this->h_sid_neg  << ", "  <<  this->A_n_side_neg(0) << ", " << this->A_n_side_neg(1) << ", " << this->b_n_side_neg << std::endl;
     }
 };
 
@@ -246,8 +246,12 @@ public:
 
 		//tune 20190110:
 		curr.radius = 2.1; 
-		curr.pos_x = 90.11;
-		curr.pos_y = 0.342;
+		curr.pos_x = 86.11;
+		curr.pos_y = 1.342;
+
+		//curr.radius = 2.1; 
+		//curr.pos_x = 90.11;
+		//curr.pos_y = 0.342;
             }
             while (curr.isConf(traj_ob));
             traj_ob.push_back(curr);
