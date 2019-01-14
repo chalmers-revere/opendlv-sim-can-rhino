@@ -308,7 +308,7 @@ tra_com_dot(2) =1;  */
         {
 
             using namespace qpOASES;
-            SQProblem qp(2, 1);
+            //SQProblem qp(2, 2);  //the second variable represents the number of the constraints 
             real_t H[4] = {1.0, 0.0, 0.0, 1.0};
             real_t f2[2] = {-2 * u_nom(0), -2 * u_nom(1)};
             // const int size1 = A_n_and.size() * 2, size2 = b_n_and.size();
@@ -324,14 +324,39 @@ tra_com_dot(2) =1;  */
             for (int i = 0; i < b_n_and.size(); i++)
                 rtb_n_and[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
             real_t rtlb[2]{delta_min, -alpha(1)}, rtub[2]{delta_max, alpha(1)};
-            int nWSR = 10;
+            int nWSR = 100;
+
+	    
+            //just test the solver: 
+ // H = {1.0, 0.0, 0.0, 1.0};
+SQProblem qp_test(2, 2);
+real_t  f2_test[2] = {0, 0};
+real_t rtA_n_and_test[4] = {10, 21, 0, 1.3};
+real_t rtb_n_and_test[2] = {-51000, 0}; 
+real_t lb[2] = {-100, -10};
+real_t ub[2] = {100, 10};
+qp_test.init(H, f2_test, rtA_n_and_test, lb, ub, rtNullprt, rtb_n_and_test, nWSR);
+                // (Currently) NEVER goes to "else"
+
+                qp_test.getPrimalSolution(rtOut);
+
+std::cout << "rtA_n_and_test:  " << rtA_n_and_test[0] << ", " << rtA_n_and_test[1] << ", " << rtA_n_and_test[2]  << ", " << rtA_n_and_test[3]  << std::endl;
+std::cout << "rtb_n_and_test:  " << rtb_n_and_test[0] << ", " << rtb_n_and_test[1] << std::endl;
+                printf( "\n test qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp_test.getObjVal() );        
+std::cout << "test qp is solvable? " << qp_test.isSolved() << std::endl;    
+
+
+
             if (A_n_and.size() > 0)
             {
+                SQProblem qp1(2, A_n_and.size());  //the second variable represents the number of the constraints 
                 if (!flag_bound) 
-                    qp.init(H, f2, rtA_n_and, rtlb, rtub, rtNullprt, rtb_n_and, nWSR, 0);
+                    qp1.init(H, f2, rtA_n_and, rtlb, rtub, rtNullprt, rtb_n_and, nWSR, 0);
                 // (Currently) NEVER goes to "else"
-                qp.getPrimalSolution(rtOut);
-                if (!qp.isSolved())
+                qp1.getPrimalSolution(rtOut);
+
+                
+                if (!qp1.isSolved())
                 {
                     A_n_and.clear();
                     b_n_and.clear();
@@ -378,10 +403,12 @@ tra_com_dot(2) =1;  */
             }
             for (int i = 0; i < b_n_and.size(); i++)
                 rtb_new[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
-            qp.init(H, f2, rtA_new, rtlb, rtub, rtNullprt, rtb_new, nWSR, 0);
+
+            SQProblem qp2(2, A_n_and.size());  //the second variable represents the number of the constraints 
+            qp2.init(H, f2, rtA_new, rtlb, rtub, rtNullprt, rtb_new, nWSR, 0);
             // line 269 so far
-            qp.getPrimalSolution(rtOut);
-            double FVAL = (qp.isSolved()) ? (double)(qp.getObjVal()) : (double)1e8;
+            qp2.getPrimalSolution(rtOut);
+            double FVAL = (qp2.isSolved()) ? (double)(qp2.getObjVal()) : (double)1e8;
 
             if (FVAL < value_min)
             {
