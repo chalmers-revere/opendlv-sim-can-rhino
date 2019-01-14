@@ -234,18 +234,30 @@ tra_com_dot(2) =1;  */
         }
     }
 
+
+
+//tune, 20190114, just test the oder: 
+    no_ob_active = 2; 
+Eigen::MatrixXi slack_mult_test(2, no_ob_active);
+    slack_mult_test << 0, 1, 
+	          1, 1; 
+    nu_combine = 2; 
+  //above, tune, 20190114, just test the oder:                
+
+
     Eigen::MatrixXi order(nu_combine, no_ob_active);
     order.setOnes();
     
+ 
     int tempI = 0;
     for (int i = 0; i < no_ob_active; ++i)
     {
 
-        if ((0 == slack_mult(0, i)) && (1 == slack_mult(1, i)))
+        if ((0 == slack_mult_test(0, i)) && (1 == slack_mult_test(1, i)))
         {
-            order.col(no_ob_active) *= 2;
+            order.col(i) *= 2;
         }
-        else if ((1 == slack_mult(0, i)) && (1 == slack_mult(1, i)))
+        else if ((1 == slack_mult_test(0, i)) && (1 == slack_mult_test(1, i)))
         {
             tempI++; // the I-th case with 2 possibilities
             int length = nu_combine / pow(2, tempI);
@@ -257,6 +269,10 @@ tra_com_dot(2) =1;  */
             }
         }
     }
+ 
+
+    std::cout << "order: " << order << std::endl;
+
 
     double value_min = 1.0e8;
     // x_min = [0;0];
@@ -332,7 +348,7 @@ tra_com_dot(2) =1;  */
 SQProblem qp_test(2, 2);
 real_t  f2_test[2] = {0, 0};
 real_t rtA_n_and_test[4] = {10, 21, 0, 1.3};
-real_t rtb_n_and_test[2] = {-51000, 0}; 
+real_t rtb_n_and_test[2] = {-51, 0}; 
 real_t lb[2] = {-100, -10};
 real_t ub[2] = {100, 10};
 qp_test.init(H, f2_test, rtA_n_and_test, lb, ub, rtNullprt, rtb_n_and_test, nWSR);

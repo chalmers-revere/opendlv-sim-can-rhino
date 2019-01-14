@@ -3,7 +3,7 @@
 H = [1, 0; 0, 1];
 f2 = [0; 0];
 A_n_and = [10, 21; 0, 1.3];
-b_n_and = [-51000; -0]; 
+b_n_and = [-51; -0]; 
 lb = [-100; -10];
 ub = [100; 10];
 optoption_1 = optimset('Display', 'off', 'TolFun', 1e-10);
