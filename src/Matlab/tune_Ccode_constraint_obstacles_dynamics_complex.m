@@ -6,11 +6,16 @@ state =[15.8828, 0.6, 0.1, 2, 2.3, 18.1959, 0, 0];
 
 t = 0;
 
-traj_ob.no  = 1; 
-traj_ob.pos  = [86.11; 1.342];
-traj_ob.vel= [0; 0]; 
-traj_ob.acc = [0; 0]; 
-traj_ob.rad = 2.1;
+%test data, the same with the data in C++:
+traj_ob.no  = 5; 
+traj_ob.pos(:,1)  = [105.198; -0.394253];
+traj_ob.pos(:,2)  = [121.873; 1.06621];
+traj_ob.pos(:,3)  = [137.406; 1.37122];
+traj_ob.pos(:,4)  = [155.558; 0.844668];
+traj_ob.pos(:,5)  = [178.701; 1.34513];
+traj_ob.vel= zeros(2,traj_ob.no);
+traj_ob.acc = zeros(2,traj_ob.no);
+traj_ob.rad = [2.36161; 3.42412; 2.04915; 3.16951; 2.71321];
 
 test_resl = constraint_obstacles_dynamics_complex(state,t,traj_ob); 
 

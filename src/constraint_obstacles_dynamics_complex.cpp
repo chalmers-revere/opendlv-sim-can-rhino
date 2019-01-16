@@ -517,8 +517,9 @@ std::cout << "rel_vel: " << rel_vel[0] << ", "  << rel_vel[1] << ", " << std::en
 	//tune: 
 	std::cout << "current state in constraint:" << std::endl;
 	u.print();
-	std::cerr << "No of obstacles: " << ob_array.size()  <<  std::endl;
-	ob_array[0].print();
+	//std::cerr << "No of obstacles: " << ob_array.size()  <<  std::endl;
+	std::cout << "obstacle " << i << std::endl;
+        ob_array[i].print();
 	c.print();
 
     } // for each ob in ob_array

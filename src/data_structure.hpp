@@ -130,8 +130,8 @@ public:
 
     void print()
     {
-        std::cout << "Obstacle coor: [" << pos_x << ", " << pos_y << "], vel: [" << vel_x << ", " << vel_y << "]" << std::endl;
-        std::cout << "acc:  [" << acc_x << ", " << acc_y << "], radius: " << radius << std::endl;
+        std::cout << "Obstacle coor: [" << pos_x << "; " << pos_y << "], vel: [" << vel_x << "; " << vel_y << "]" << std::endl;
+        std::cout << "acc:  [" << acc_x << "; " << acc_y << "], radius: " << radius << std::endl;
     }
 };
 
@@ -192,7 +192,7 @@ public:
 
     // the following three are initialised by constraint_obstacles.m
     std::vector<Obstacle> traj_ob{};
-    int no_ob{1};
+    int no_ob{5};
     // vector<Eigen::Vector2d> pos_ob_array_pre;
     // vector<double> radius_pre;
 
@@ -245,9 +245,9 @@ public:
                 curr.pos_y = -1.7 + 3.4 * (double)rand() / RAND_MAX;
 
 		//tune 20190110:
-		curr.radius = 2.1; 
+		/*curr.radius = 2.1; 
 		curr.pos_x = 86.11;
-		curr.pos_y = 1.342;
+		curr.pos_y = 1.342;*/
 
 		//curr.radius = 2.1; 
 		//curr.pos_x = 90.11;
