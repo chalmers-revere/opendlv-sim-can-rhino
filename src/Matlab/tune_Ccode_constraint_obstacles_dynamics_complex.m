@@ -8,14 +8,14 @@ t = 0;
 
 %test data, the same with the data in C++:
 traj_ob.no  = 5; 
-traj_ob.pos(:,1)  = [105.198; -0.394253];
-traj_ob.pos(:,2)  = [121.873; 1.06621];
-traj_ob.pos(:,3)  = [137.406; 1.37122];
-traj_ob.pos(:,4)  = [155.558; 0.844668];
-traj_ob.pos(:,5)  = [178.701; 1.34513];
+traj_ob.pos(:,1)  = [108.233; -1.36608];
+traj_ob.pos(:,2)  = [123.244; 0.998566];
+traj_ob.pos(:,3)  = [142.236; -0.472505];
+traj_ob.pos(:,4)  = [157.027; -1.60909];
+traj_ob.pos(:,5)  = [169.361; -0.807626];
 traj_ob.vel= zeros(2,traj_ob.no);
 traj_ob.acc = zeros(2,traj_ob.no);
-traj_ob.rad = [2.36161; 3.42412; 2.04915; 3.16951; 2.71321];
+traj_ob.rad = [2.00564; 2.62428; 2.23689; 2.28824; 3.25264];
 
 test_resl = constraint_obstacles_dynamics_complex(state,t,traj_ob); 
 
