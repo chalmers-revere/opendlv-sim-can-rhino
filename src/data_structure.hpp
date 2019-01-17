@@ -217,7 +217,7 @@ public:
         scale_record = 0;
         Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
         tra_com_pre << 0.0, 0.0, 0.0;
-        tra_com_dot_pre << 0.0, 0.0, 15.0; // Pay attention to the value here!
+        tra_com_dot_pre << 0.0, 0.0, 10.0; // Pay attention to the value here!
         tra_com_ddot_pre << 0.0, 0.0, 0.0;
         trajd.push_back(tra_com_pre);
         trajd.push_back(tra_com_dot_pre);
