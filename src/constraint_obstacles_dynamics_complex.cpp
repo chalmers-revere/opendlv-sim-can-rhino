@@ -377,6 +377,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
 //            - ((pos_ob_x - s)*(yp_dot*cos(epsi) + xp_dot*sin(epsi))*(ey*vel_ob_x + pos_ob_x*vel_ob_y - pos_ob_y*vel_ob_x - s*vel_ob_y - ey*xp_dot*cos(epsi) + pos_ob_y*xp_dot*cos(epsi) - pos_ob_x*yp_dot*cos(epsi) + s*yp_dot*cos(epsi) + ey*yp_dot*sin(epsi) - pos_ob_x*xp_dot*sin(epsi) - pos_ob_y*yp_dot*sin(epsi) + s*xp_dot*sin(epsi)))/((1 - ((pos_ob_x - s)*(vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi)) + (ey - pos_ob_y)*(yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi)))^2/(((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)))^(1/2)*((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)^(3/2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)^(1/2)) - ((vel_ob_x*cos(epsi) - xp_dot + vel_ob_y*sin(epsi))*(m*psi_dot*xp_dot^2 + 2*cf*yp_dot + 2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot)*(ey*vel_ob_x + pos_ob_x*vel_ob_y - pos_ob_y*vel_ob_x - s*vel_ob_y - ey*xp_dot*cos(epsi) + pos_ob_y*xp_dot*cos(epsi) - pos_ob_x*yp_dot*cos(epsi) + s*yp_dot*cos(epsi) + ey*yp_dot*sin(epsi) - pos_ob_x*xp_dot*sin(epsi) - pos_ob_y*yp_dot*sin(epsi) + s*xp_dot*sin(epsi)))/(m*xp_dot*(1 - ((pos_ob_x - s)*(vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi)) + (ey - pos_ob_y)*(yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi)))^2/(((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)))^(1/2)*((pos_ob_x - s)^2 + (ey - pos_ob_y)^2)^(1/2)*((vel_ob_x - xp_dot*cos(epsi) + yp_dot*sin(epsi))^2 + (yp_dot*cos(epsi) - vel_ob_y + xp_dot*sin(epsi))^2)^(3/2));
 
 
+/*
             std::cout << "vel_ob_x: " << vel_ob_x << std::endl;
             std::cout << "vel_ob_y: " << vel_ob_y << std::endl;
             std::cout << "acc_ob_x: " << acc_ob_x << std::endl;
@@ -387,6 +388,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             std::cout << "ey: " << ey << std::endl;
             std::cout << "s: " << s << std::endl;
             std::cout << "L_f_h_ang_part1: " << L_f_h_ang_part1 << std::endl;
+*/
 
 
                                 double L_t_h_ang_part1 = -((ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y
@@ -471,9 +473,9 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             double L_f_h_ang = L_f_h_ang_part1 - asin_dot * temp_d * L_f_h_ang_part2;
             double L_g_h_ang = L_g_h_ang_part1 - asin_dot * temp_d * L_g_h_ang_part2;
             double L_t_h_ang = L_t_h_ang_part1 - asin_dot * temp_d * L_t_h_ang_part2;
-
             // line 288 so far
 
+/*
 
             //tune:
             std::cout << "L_f_h_ang_part1: " << L_f_h_ang_part1 << std::endl;
@@ -485,6 +487,9 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             std::cout << "L_f_h_ang: " << L_f_h_ang << std::endl;
             std::cout << "L_g_h_ang: " << L_g_h_ang << std::endl;
             std::cout << "L_t_h_ang: " << L_t_h_ang << std::endl;
+*/
+
+
 
             A_n_angle_fix(0) = - L_g_h_ang;
             b_n_angle_fix = L_f_h_ang + L_t_h_ang + 3 * h_ang;

@@ -239,7 +239,7 @@ int32_t main(int32_t argc, char **argv) {
 
 
 dynamics::dynamics():
-state_global({{2,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
+state_global({{10,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
 diff_global({{0,0,0},{0,0,0},{0,0},0,0,0,0,0,0}),
 input_global({0,0,0,0}),
 PI (3.14159265),
@@ -278,6 +278,7 @@ MAX_STEERING( 0.785398), // PI/4, 90 degree
 omega_e ( 0),
 Te ( 0)
 {
+
 	///////////////////the parameters of the vehicle//////////////////////
 
 	PI = 3.14159265;
@@ -355,7 +356,7 @@ Te ( 0)
 	/////////////////////////states/////////////////////////////////////
 	//the velocity of the vehicle, expressed in the body frame of the vehicle
 	for (int i = 0; i < 3; i++){
-		state_global.v_body[i] = ((0 == i) ? 2 : 0);
+		state_global.v_body[i] = ((0 == i) ? 10 : 0);
 		state_global.omega_body[i] = 0;  //angular velocity, body frame
 
 		diff_global.vb_dot[i] = 0;  //dot of velocity of body

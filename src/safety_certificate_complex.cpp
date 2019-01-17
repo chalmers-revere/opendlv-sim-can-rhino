@@ -174,11 +174,11 @@ tra_com_dot(2) =1;  */
     
 // tune 20190110:
     //[15.8828, 0, 0, 0, 0, 18.1959, 0, 0];
-    u.xp_dot =15.87;   u.yp_dot = 0.6; u.psi_dot =0.223;
+   /* u.xp_dot =15.87;   u.yp_dot = 0.6; u.psi_dot =0.223;
     u.epsi = 0.7665;  u.ey = 2.3;  u.s = 5.98959;  
 
     u.xp_dot =15.8828;   u.yp_dot = 0.6; u.psi_dot = 0.1;
-    u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;
+    u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;  */
 
 	//std::cout << "current state in safety_certificate:" << std::endl;
 	//u.print();
@@ -344,23 +344,41 @@ Eigen::MatrixXi slack_mult_test(2, no_ob_active);
 
 	    
             //just test the solver: 
- // H = {1.0, 0.0, 0.0, 1.0};
-SQProblem qp_test(2, 2);
-real_t  f2_test[2] = {0, 0};
-real_t rtA_n_and_test[4] = {10, 21, 0, 1.3};
-real_t rtb_n_and_test[2] = {-51, 0}; 
-real_t lb[2] = {-100, -10};
-real_t ub[2] = {100, 10};
-qp_test.init(H, f2_test, rtA_n_and_test, lb, ub, rtNullprt, rtb_n_and_test, nWSR);
-                // (Currently) NEVER goes to "else"
 
-                qp_test.getPrimalSolution(rtOut);
+ 
+ // H = {1.0, 0.0, 0.0, 1.0};
+int test_qpint = 3;
+SQProblem qp_test(2, test_qpint);
+real_t  f2_test[2] = {-2 * u_nom(0), -2 * u_nom(1)};
+real_t rtA_n_and_test[2*test_qpint] = { 0, 0, 0, 0, -1.4883, 0.999779 };
+real_t rtb_n_and_test[test_qpint] = {1.6, 1.6, 86.3249}; 
+real_t lb[2] = {-0.5, -4};
+real_t ub[2] = {0.5, 4};
+
+qp_test.init(H, f2_test, rtA_n_and_test, lb, ub, rtNullprt, rtb_n_and_test, nWSR);
+qp_test.getPrimalSolution(rtOut);
 
 std::cout << "rtA_n_and_test:  " << rtA_n_and_test[0] << ", " << rtA_n_and_test[1] << ", " << rtA_n_and_test[2]  << ", " << rtA_n_and_test[3]  << std::endl;
 std::cout << "rtb_n_and_test:  " << rtb_n_and_test[0] << ", " << rtb_n_and_test[1] << std::endl;
                 printf( "\n test qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp_test.getObjVal() );        
-std::cout << "test qp is solvable? " << qp_test.isSolved() << std::endl;    
+std::cout << "test qp is solvable? " << qp_test.isSolved() << std::endl;   
 
+
+SQProblem qp_test2(2, test_qpint);
+real_t  f2_test2[2] = {-2 * u_nom(0), -2 * u_nom(1)};
+real_t rtA_n_and_test2[2*test_qpint] = { 0, 0, 0, 0, -1.4883, 0.999779 };
+real_t rtb_n_and_test2[test_qpint] = {1.6, 1.6, 86.3249}; 
+real_t lb2[2] = {-0.5, -4};
+real_t ub2[2] = {0.5, 4};
+qp_test2.init(H, f2_test2, rtA_n_and_test2, lb2, ub2, rtNullprt, rtb_n_and_test2, nWSR);  //can only be used once? 
+
+real_t rtOutout[2];
+qp_test2.getPrimalSolution(rtOutout);
+ 
+double FVAL = (qp_test2.isSolved()) ? (double)(qp_test2.getObjVal()) : (double)1e8;
+printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOutout[0], rtOutout[1], qp_test2.getObjVal() );        
+std::cout << " qp2 is solvable? " << qp_test2.isSolved() << std::endl;    
+ 
 
 
             if (A_n_and.size() > 0)
@@ -416,26 +434,61 @@ std::cout << "test qp is solvable? " << qp_test.isSolved() << std::endl;
             {
                 rtA_new[2 * i] = (abs(A_n_and[i][0]) < 1e-4) ? 0 : A_n_and[i][0];
                 rtA_new[2 * i + 1] = (abs(A_n_and[i][1]) < 1e-4) ? 0 : A_n_and[i][1];
-            }
-            for (int i = 0; i < b_n_and.size(); i++)
-                rtb_new[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
 
-            SQProblem qp2(2, A_n_and.size());  //the second variable represents the number of the constraints 
-            qp2.init(H, f2, rtA_new, rtlb, rtub, rtNullprt, rtb_new, nWSR, 0);
-            // line 269 so far
-            qp2.getPrimalSolution(rtOut);
-            double FVAL = (qp2.isSolved()) ? (double)(qp2.getObjVal()) : (double)1e8;
+                std::cout << "rtA_new " << 2*i  << ": " << rtA_new[2 * i]  <<  std::endl;
+		std::cout << "rtA_new " << 2 * i + 1  << ": " << rtA_new[2 * i + 1]  <<  std::endl;
+            }
+            for (int i = 0; i < b_n_and.size(); i++){
+                rtb_new[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
+                std::cout << "rtb_new " << i  << ": " << rtb_new[i] <<  std::endl;
+            }
+
+            //SQProblem qp2(2, 3);  //the second variable represents the number of the constraints 
+            //qp2.init(H, f2, rtA_new, rtlb, rtub, rtNullprt, rtb_new, nWSR);
+
+
+
+/*
+ 
+SQProblem qp_test2(2, test_qpint);
+real_t  f2_test2[2] = {-2 * u_nom(0), -2 * u_nom(1)};
+real_t rtA_n_and_test2[2*test_qpint] = { 0, 0, 0, 0, -1.4883, 0.999779 };
+real_t rtb_n_and_test2[test_qpint] = {1.6, 1.6, 86.3249}; 
+real_t lb2[2] = {-0.5, -4};
+real_t ub2[2] = {0.5, 4};
+qp_test2.init(H, f2_test2, rtA_n_and_test2, lb2, ub2, rtNullprt, rtb_n_and_test2, nWSR);
+
+real_t rtOutout[2];
+qp_test2.getPrimalSolution(rtOutout);
+ 
+            double FVAL = (qp_test2.isSolved()) ? (double)(qp_test2.getObjVal()) : (double)1e8;
+
+std::cout << "rtlb:  " <<rtlb[0] << ", " << rtlb[1] << std::endl;
+std::cout << "rtub:  " <<rtub[0] << ", " << rtub[1] << std::endl;
+std::cout << "f2:  " <<f2[0] << ", " << f2[1] << std::endl;
+
+std::cout << "A_n_and.size():  " << A_n_and.size() << std::endl;
+ std::cout << "rtA_new:  " << rtA_new[0] << ", " << rtA_new[1] << ", " << rtA_new[2]  << ", " << rtA_new[3]  << std::endl;
+std::cout << "rtb_new:  " << rtb_new[0] << ", " << rtb_new[1] << std::endl;  
+printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOutout[0], rtOutout[1], qp_test2.getObjVal() );        
+std::cout << " qp2 is solvable? " << qp_test2.isSolved() << std::endl;  */      
 
             if (FVAL < value_min)
             {
                 value_min = FVAL;
-                x_min[0] = rtOut[0];
-                x_min[1] = rtOut[1];
+                x_min[0] = rtOutout[0];
+                x_min[1] = rtOutout[1];
                 // Removed unused matrices A_min and b_min
             }
         } // using namespace qpOASES
     } // for (i = 0 to nu_combine)
     // line 288 so far
+
+
+
+	std::cout << "value_min:  " << value_min << std::endl;
+	std::cout << "alert:  " << alert << std::endl;
+	std::cout << "gl.dead:  " << gl.dead << std::endl;
 
     if((value_min < 1e8) && (!alert) && (!gl.dead))
     {

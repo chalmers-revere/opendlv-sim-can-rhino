@@ -124,7 +124,7 @@ int32_t main(int32_t argc, char *argv[])
                 //gl.traj_gen(nom_state);
 
                 //20190108:
-		gl.trajd[0](2) = gl.trajd[0](2) + 15*0.02;  
+		gl.trajd[0](2) = gl.trajd[0](2) + 10*0.02;  
 
                 // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);

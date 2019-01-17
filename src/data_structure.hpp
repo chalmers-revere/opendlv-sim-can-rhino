@@ -192,7 +192,7 @@ public:
 
     // the following three are initialised by constraint_obstacles.m
     std::vector<Obstacle> traj_ob{};
-    int no_ob{5};
+    int no_ob{1};
     // vector<Eigen::Vector2d> pos_ob_array_pre;
     // vector<double> radius_pre;
 
@@ -240,9 +240,9 @@ public:
             Obstacle curr;
             do
             {
-                curr.radius = 2 + 1.5 * (double)rand() / RAND_MAX;
-                curr.pos_x = 80 + 100 * (double)rand() / RAND_MAX;
-                curr.pos_y = -1.7 + 3.4 * (double)rand() / RAND_MAX;
+                curr.radius = 1 + 0.5 * (double)rand() / RAND_MAX;
+                curr.pos_x = 200 + 100 * (double)rand() / RAND_MAX;
+                curr.pos_y = -4.7 + 1.4 * (double)rand() / RAND_MAX;
 
 		//tune 20190110:
 		/*curr.radius = 2.1; 
@@ -288,7 +288,7 @@ public:
         double virtual_time = std::exp(-ks * err.squaredNorm());
         double v = 20 * virtual_time;
 
-	v = 15; //constant 
+	v = 10; //constant 
         //trajd[0](2) = v * t; // tra_com_pre
         trajd[1](2) = v; // tra_com_dot_pre
 	trajd[0](1) = 0; // 
