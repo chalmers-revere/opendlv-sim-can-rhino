@@ -50,7 +50,7 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
       tra_com(1) = 1; 
        tra_com(2) = 1; 
        tra_com_dot(1) = 1;
-tra_com_dot(2) =1;  */
+tra_com_dot(2) =1;   */
       
 
     std::cerr << "reference trajactory: " << tra_com(1) << " ," << tra_com(2) << " ,"  << tra_com_dot(1) << " ," << tra_com_dot(2) << " ," << 
@@ -94,25 +94,55 @@ tra_com_dot(2) =1;  */
         ka_acc * cos(epsi);
 
     Eigen::Vector2d L_F_F_F_output;
-    L_F_F_F_output << err_psi_dot * cos(epsi) * tempD1 - err_psi_dot * (yp_dot * cos(epsi) + xp_dot * sin(epsi))
-                        + sin(epsi) * tempD2 - acc * ka_acc * sin(epsi) 
-                        + (2 * cos(epsi) * (cf + cr) - m * psi_dot_com * xp_dot * sin(epsi)) * tempD2 / (m * xp_dot)
-                        - 2 * cf * ka_steer * steer * cos(epsi) / m
-                        + cos(epsi) * tempD1 
-                            * (-m * psi_dot_com * pow(xp_dot, 2) + 2 * yp_dot * (cf + cr) + 2 * psi_dot * (a * cf - b * cr))
-                            / (m * pow(xp_dot, 2))
-                        + 4 * cos(epsi) * (a * cf - b * cr) 
-                            * (a * cf * (yp_dot + a * psi_dot - steer * xp_dot) - b * cr * (yp_dot - b * psi_dot))
-                            / (Iz * m * pow(xp_dot, 2)),
-                    2 * cf * ka_steer * steer * sin(epsi) / m
-                        - (2 * sin(epsi) * (cf + cr) + m * psi_dot_com * xp_dot * cos(epsi)) * tempD2 / (m * xp_dot)
-                        - err_psi_dot * (sin(epsi) * tempD1 + err_psi_dot * (xp_dot * cos(epsi) - yp_dot * sin(epsi)) - cos(epsi) * tempD2)
-                        - sin(epsi) * tempD1 
-                            * (-m * psi_dot_com * pow(xp_dot, 2) + 2 * yp_dot * (cf + cr) + 2 * psi_dot * (a * cf - b * cr))
-                            / (m * pow(xp_dot, 2)) 
-                        - 4 * sin(epsi) * (a * cf - b * cr) 
-                            * (a * cf * (yp_dot + a * psi_dot - steer * xp_dot) - b * cr * (yp_dot - b * psi_dot))
-                            / (Iz * m * pow(xp_dot, 2));
+    L_F_F_F_output << (psi_dot - psi_dot_com)*(cos(epsi)*(acc + psi_dot*yp_dot) -
+    		(psi_dot - psi_dot_com)*(yp_dot*cos(epsi) + xp_dot*sin(epsi)) +
+    		(sin(epsi)*(m*psi_dot*xp_dot*xp_dot- 2*cf*steer*xp_dot + 2*cf*yp_dot +
+        2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot)) - acc*ka_acc*sin(epsi) +
+        ((2*cf*cos(epsi) + 2*cr*cos(epsi) - m*psi_dot_com*xp_dot*sin(epsi))*
+        (m*psi_dot*xp_dot*xp_dot - 2*cf*steer*xp_dot + 2*cf*yp_dot + 2*cr*yp_dot +
+        2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*m*xp_dot*xp_dot) -
+        (2*cf*ka_steer*steer*cos(epsi))/m + (cos(epsi)*(acc + psi_dot*yp_dot)*
+        (- m*psi_dot_com*xp_dot* xp_dot + 2*cf*yp_dot + 2*cr*yp_dot + 2*a*cf*psi_dot -
+    		2*b*cr*psi_dot))/(m*xp_dot*xp_dot) + (4*cos(epsi)*(a*cf - b*cr)*
+    		(a*cf*yp_dot - b*cr*yp_dot + a*a*cf*psi_dot + b*b*cr*psi_dot - a*cf*steer*xp_dot))/(Iz*m*xp_dot*xp_dot),
+    (2*cf*ka_steer*steer*sin(epsi))/m - acc*ka_acc*cos(epsi) -
+        ((2*cf*sin(epsi) + 2*cr*sin(epsi) + m*psi_dot_com*xp_dot*cos(epsi))*
+        (m*psi_dot*xp_dot* xp_dot- 2*cf*steer*xp_dot + 2*cf*yp_dot + 2*cr*yp_dot +
+        2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*m*xp_dot*xp_dot) - (psi_dot - psi_dot_com)*
+        (sin(epsi)*(acc + psi_dot*yp_dot) + (psi_dot - psi_dot_com)*(xp_dot*cos(epsi) -
+        		yp_dot*sin(epsi)) - (cos(epsi)*(m*psi_dot*xp_dot*xp_dot - 2*cf*steer*xp_dot +
+        	2*cf*yp_dot + 2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot)) -
+        	(sin(epsi)*(acc + psi_dot*yp_dot)*(- m*psi_dot_com*xp_dot*xp_dot + 2*cf*yp_dot +
+        	2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot*xp_dot) - (4*sin(epsi)*(a*cf - b*cr)*
+        	(a*cf*yp_dot - b*cr*yp_dot + a*a*cf*psi_dot + b*b*cr*psi_dot - a*cf*steer*xp_dot))/(Iz*m*xp_dot*xp_dot) ;
+
+
+    //matlab function:
+   /* L_F_F_F_output = [ (psi_dot - psi_dot_com)*(cos(epsi)*(acc + psi_dot*yp_dot) -
+    		(psi_dot - psi_dot_com)*(yp_dot*cos(epsi) + xp_dot*sin(epsi)) +
+    		(sin(epsi)*(m*psi_dot*xp_dot^2 - 2*cf*steer*xp_dot + 2*cf*yp_dot +
+    				2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot)) - acc*ka_acc*sin(epsi) +
+    				((2*cf*cos(epsi) + 2*cr*cos(epsi) - m*psi_dot_com*xp_dot*sin(epsi))*
+    						(m*psi_dot*xp_dot^2 - 2*cf*steer*xp_dot + 2*cf*yp_dot + 2*cr*yp_dot +
+    								2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m^2*xp_dot^2) -
+    								(2*cf*ka_steer*steer*cos(epsi))/m + (cos(epsi)*(acc + psi_dot*yp_dot)*
+    										(- m*psi_dot_com*xp_dot^2 + 2*cf*yp_dot + 2*cr*yp_dot + 2*a*cf*psi_dot -
+    		2*b*cr*psi_dot))/(m*xp_dot^2) + (4*cos(epsi)*(a*cf - b*cr)*
+    		(a*cf*yp_dot - b*cr*yp_dot + a^2*cf*psi_dot + b^2*cr*psi_dot - a*cf*steer*xp_dot))/(Iz*m*xp_dot^2);
+     (2*cf*ka_steer*steer*sin(epsi))/m - acc*ka_acc*cos(epsi) -
+    ((2*cf*sin(epsi) + 2*cr*sin(epsi) + m*psi_dot_com*xp_dot*cos(epsi))*
+    (m*psi_dot*xp_dot^2 - 2*cf*steer*xp_dot + 2*cf*yp_dot + 2*cr*yp_dot +
+    2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m^2*xp_dot^2) - (psi_dot - psi_dot_com)*
+    (sin(epsi)*(acc + psi_dot*yp_dot) + (psi_dot - psi_dot_com)*(xp_dot*cos(epsi) -
+    		yp_dot*sin(epsi)) - (cos(epsi)*(m*psi_dot*xp_dot^2 - 2*cf*steer*xp_dot +
+    	2*cf*yp_dot + 2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot)) -
+    	(sin(epsi)*(acc + psi_dot*yp_dot)*(- m*psi_dot_com*xp_dot^2 + 2*cf*yp_dot +
+    	2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot^2) - (4*sin(epsi)*(a*cf - b*cr)*
+    	(a*cf*yp_dot - b*cr*yp_dot + a^2*cf*psi_dot + b^2*cr*psi_dot - a*cf*steer*xp_dot))/(Iz*m*xp_dot^2)];  */
+
+ 
+
+
 
     Eigen::Matrix2d k1, k2, k3;
     k1 << 5 * 2.2361, 0, 0, 5 * 2.2361;
@@ -127,15 +157,25 @@ tra_com_dot(2) =1;  */
     tempTail1 << tra_com_dot(1), tra_com_dot(2);
     tempTail2 << tra_com_ddot(1), tra_com_ddot(2);
     // tra_com_dddot is all-zero, omitted, u_nom(0) is steering angle, u_nom(1) is acc_x
-    u_nom_lin = - k1 * ((tempV2d - tempTail0) - k2 * (L_F_output - tempTail1) - k3 * (L_F_F_output - tempTail2));
-    u_nom = L_G_L_F_F_output.inverse() * (u_nom_lin - L_F_F_F_output);
-     
-
+    u_nom_lin = - k1 * (tempV2d - tempTail0) - k2 * (L_F_output - tempTail1) - k3 * (L_F_F_output - tempTail2);  //this equation is corrected now 
+    u_nom = L_G_L_F_F_output.inverse() * (u_nom_lin - L_F_F_F_output); 
+   
+/*
+std::cout << "L_G_L_F_F_output:  " << L_G_L_F_F_output << std::endl;
+std::cout << "L_F_F_F_output:  " << L_F_F_F_output << std::endl;
+std::cout << "L_F_F_output:  " <<L_F_F_output << std::endl;
+std::cout << "L_F_output:  " <<L_F_output << std::endl;
+std::cout << "u_nom_lin:  " <<u_nom_lin << std::endl;
+std::cout << "u_nom:  " <<u_nom << std::endl;
+std::cout << "tempTail0:  " << tempTail0 << std::endl;
+std::cout << "tempTail1:  " << tempTail1 << std::endl;
+std::cout << "tempTail2:  " << tempTail2 << std::endl;
+std::cout << "tempV2d:  " << tempV2d << std::endl; */
 
 
    //20190107: 
-    k1 << 9, 0, 0, 3;
-    k2 << 2*1.414*3, 0, 0, 2*1.414*1.7321;
+    k1 << 9, 0, 0, 9;
+    k2 << 2*1.414*3, 0, 0, 2*1.414*3;
 
     Eigen::Vector2d L_f_output, L_f_f_output;
     L_f_output << yp_dot * cos(epsi) + xp_dot * sin(epsi), xp_dot * cos(epsi) - yp_dot * sin(epsi);
@@ -149,8 +189,8 @@ tra_com_dot(2) =1;  */
          cos(epsi);
         //u_nom(0) is steering angle, u_nom(1) is acc_x
  
-     u_nom_lin = - k1 * (tempV2d - tempTail0) - k2 * (L_f_output - tempTail1) ;
-     u_nom = L_g_f_output.inverse() * (u_nom_lin - L_f_f_output);
+     //u_nom_lin = - k1 * (tempV2d - tempTail0) - k2 * (L_f_output - tempTail1) ;
+     //u_nom = L_g_f_output.inverse() * (u_nom_lin - L_f_f_output);
 
 
    //tune: 
@@ -164,8 +204,8 @@ tra_com_dot(2) =1;  */
     Eigen::Vector2d alpha;
     alpha << 1.0, 4.0;
     tempD1 = (yp_dot + a * psi_dot) / xp_dot;
-    double delta_min = (tempD1 - 0.5 > -1.)? tempD1 - 0.5 : -1.0;
-    double delta_max = (tempD1 + 0.5 < 1.0)? tempD1 + 0.5 : 1.0;
+    double delta_min = (tempD1 - 0.07 > -1.)? tempD1 - 0.07 : -1.0;
+    double delta_max = (tempD1 + 0.07 < 1.0)? tempD1 + 0.07 : 1.0;
 
     bool flag_bound = false, alert = false;
     gl.dead = false;
@@ -340,7 +380,7 @@ Eigen::MatrixXi slack_mult_test(2, no_ob_active);
             for (int i = 0; i < b_n_and.size(); i++)
                 rtb_n_and[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
             real_t rtlb[2]{delta_min, -alpha(1)}, rtub[2]{delta_max, alpha(1)};
-            int nWSR = 10;
+            int nWSR = 50;
 
 	    
             //just test the solver: 
@@ -400,7 +440,7 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
             {
                 SQProblem qp1(2, A_n_and.size());  //the second variable represents the number of the constraints 
                 if (!flag_bound) {
-                    nWSR = 10;
+                    nWSR = 50;
                     qp1.init(H, f2, rtA_n_and, rtlb, rtub, rtNullprt, rtb_n_and, nWSR, 0);
                 // (Currently) NEVER goes to "else"
                     qp1.getPrimalSolution(rtOut);
@@ -461,7 +501,7 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
             }
 
             SQProblem qp2(2, A_n_and.size());  //the second variable represents the number of the constraints 
-            nWSR = 10;
+            nWSR = 50;
             qp2.init(H, f2, rtA_new, rtlb, rtub, rtNullprt, rtb_new, nWSR);
             qp2.getPrimalSolution(rtOut);
             double FVAL = (qp2.isSolved()) ? (double)(qp2.getObjVal()) : (double)1e8;
@@ -526,7 +566,7 @@ std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;
 
     //tunning, only use the nominal control: 
     //out.x(0) = u_nom(0);
-   // out.x(1) = u_nom(1);
+    //out.x(1) = u_nom(1);
 
     return out;
 }

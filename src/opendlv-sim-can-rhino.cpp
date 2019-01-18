@@ -98,7 +98,7 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
-        auto Input_NomU{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename](cluon::data::Envelope &&env)
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
                 if (VERBOSE) std::cout << "Nom_U received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
@@ -106,7 +106,45 @@ int32_t main(int32_t argc, char **argv) {
                 m_dynamics.input_global.steering_angle = received.steer();
 
 		// m_dynamics.input_global.acc_x = 1.0;
-                // m_dynamics.input_global.steering_angle = 0;
+                // m_dynamics.input_global.steering_angle = 0; 
+                {
+                        // 2018 Dec. Update: broadcast nominal states as well
+                        internal::nomState nomStateMsg;
+          
+                        nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
+                        nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
+                        nomStateMsg.psi_dot(m_dynamics.GetYawVelocity());
+                        nomStateMsg.epsi(m_dynamics.state_global.epsi);
+                        nomStateMsg.ey(m_dynamics.state_global.ey);
+                        nomStateMsg.s(m_dynamics.state_global.s);
+                        nomStateMsg.steer(m_dynamics.GetRoadWheelAngle());
+                        nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
+
+                        od4->send(nomStateMsg);
+                        if (VERBOSE) std::cout << "Current nominal states sent: " 	
+                           << "[" << nomStateMsg.xp_dot() << ", " << nomStateMsg.yp_dot() << ", " << nomStateMsg.psi_dot() << ", " << nomStateMsg.epsi() << ", " \
+                           << nomStateMsg.ey() << ", " << nomStateMsg.s() << ", " << nomStateMsg.steer() << ", " << nomStateMsg.acc() << "]" << std::endl;
+
+                        // Data saving into txt file (if "save_file" indicated)
+                        // number of rows = length of time 
+                        // each row contains the following data, seperated by tab: 
+                        // time nomStateMsg(all attributes)
+                        if (ifSave)
+                        {
+                            std::ofstream txt(filename, std::ios::out | std::ios::app);
+                            if (txt.is_open())
+                            {
+                                txt << ((double)clock())/CLOCKS_PER_SEC << '\t'
+                                    << nomStateMsg.xp_dot() << '\t' << nomStateMsg.yp_dot() << '\t' 
+                                    << nomStateMsg.psi_dot() << '\t' << nomStateMsg.epsi() << '\t' 
+                                    << nomStateMsg.ey() << '\t' << nomStateMsg.s() << '\t' 
+                                    << nomStateMsg.steer() << '\t' << nomStateMsg.acc() << '\n';
+                                txt.close();
+                            }
+                            else std::cerr << "WARNING: Unable to save data into the file <" << filename << ">." << std::endl;
+                        }
+                
+                }
             }
         };
 
@@ -155,16 +193,26 @@ int32_t main(int32_t argc, char **argv) {
             od4_2->dataTrigger(internal::nomState::ID(), Input_Override_States);
         }
 
+        //time triggered dynamics: 
+
+      auto solver_dynamics{[od4, &m_dynamics, &FREQ, &VERBOSE, &ifSave, &filename]() -> bool
+            {
+                m_dynamics.T_samp = 0.001;  //sampling time           
+                m_dynamics.integrator(VERBOSE);
+                 
+            }
+      }; 
+
 
         // Define time triggered lambda function
         auto Output{[od4, &m_dynamics, &FREQ, &VERBOSE, &ifSave, &filename]() -> bool
             {
-                uint16_t inner_freq = 1000 / FREQ;
+                /*uint16_t inner_freq = 1000 / FREQ;
                 m_dynamics.T_samp = 0.001;  //sampling time
                 for(uint16_t i = 0; i < inner_freq; i++)
                 {
                     m_dynamics.integrator(VERBOSE);
-                }
+                }*/
 
                 opendlv::sim::KinematicState kinematicMsg;
                 kinematicMsg.vx((float)m_dynamics.GetLongitudinalVelocity());
@@ -229,7 +277,8 @@ int32_t main(int32_t argc, char **argv) {
 
         using namespace std::literals::chrono_literals;
         while (od4->isRunning()) {
-            od4->timeTrigger(FREQ, Output);
+            //od4->timeTrigger(FREQ, Output);
+            od4->timeTrigger(1000, solver_dynamics);
 //            std::this_thread::sleep_for(0.1s); // Commented as it is no longer simply data driven
 //            std::cout << "Running..." << std::endl;
         }
@@ -239,7 +288,7 @@ int32_t main(int32_t argc, char **argv) {
 
 
 dynamics::dynamics():
-state_global({{10,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
+state_global({{8,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
 diff_global({{0,0,0},{0,0,0},{0,0},0,0,0,0,0,0}),
 input_global({0,0,0,0}),
 PI (3.14159265),
@@ -356,7 +405,7 @@ Te ( 0)
 	/////////////////////////states/////////////////////////////////////
 	//the velocity of the vehicle, expressed in the body frame of the vehicle
 	for (int i = 0; i < 3; i++){
-		state_global.v_body[i] = ((0 == i) ? 10 : 0);
+		state_global.v_body[i] = ((0 == i) ? 8 : 0);
 		state_global.omega_body[i] = 0;  //angular velocity, body frame
 
 		diff_global.vb_dot[i] = 0;  //dot of velocity of body

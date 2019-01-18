@@ -115,7 +115,7 @@ int32_t main(int32_t argc, char *argv[])
     }
     while (od4.isRunning())
     {
-        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE]() -> bool
+        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE, &FREQ]() -> bool
             {
                 // update position of obstacles
                 gl.ob_traj(false); 
@@ -124,7 +124,7 @@ int32_t main(int32_t argc, char *argv[])
                 //gl.traj_gen(nom_state);
 
                 //20190108:
-		gl.trajd[0](2) = gl.trajd[0](2) + 10*0.02;  
+		gl.trajd[0](2) = gl.trajd[0](2) + 10.0/FREQ;  
 
                 // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);

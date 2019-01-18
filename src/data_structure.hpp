@@ -241,8 +241,8 @@ public:
             do
             {
                 curr.radius = 1 + 0.5 * (double)rand() / RAND_MAX;
-                curr.pos_x = 200 + 100 * (double)rand() / RAND_MAX;
-                curr.pos_y = -4.7 + 1.4 * (double)rand() / RAND_MAX;
+                curr.pos_x = 80 + 100 * (double)rand() / RAND_MAX;
+                curr.pos_y = -0.7 + 1.4 * (double)rand() / RAND_MAX;
 
 		//tune 20190110:
 		/*curr.radius = 2.1; 
