@@ -48,7 +48,7 @@ int32_t main(int32_t argc, char *argv[])
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-    FB_state nom_state(8.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(10.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 
@@ -136,7 +136,7 @@ int32_t main(int32_t argc, char *argv[])
                 gl.nosolution = !(correct.hasSolution);
 
                 internal::nomU msgNomU;
-                if (gl.nosolution)
+                /*if (gl.nosolution)
                 {
                     // std::cerr << "WARNING: No solution detected from solver!!" << std::endl;
                     msgNomU.acc(0.0);
@@ -146,11 +146,14 @@ int32_t main(int32_t argc, char *argv[])
                 {
                     msgNomU.acc(correct.x(1));
                     msgNomU.steer(correct.x(0));
-                }
+                }*/
 
                 //20190107, tune, notice the order:                 
                 msgNomU.steer(correct.x(0));
 		msgNomU.acc(correct.x(1));
+
+               // msgNomU.steer(0);
+	       // msgNomU.acc(1);
 
 		//where is it?  msgNomU    
                 //msgNomU.acc(3); msgNomU.steer(4);  //just tunning

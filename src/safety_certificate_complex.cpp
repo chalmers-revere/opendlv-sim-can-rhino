@@ -202,7 +202,7 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
     if (xp_dot < 1e-2) xp_dot = 1e-2;
 
     Eigen::Vector2d alpha;
-    alpha << 1.0, 4.0;
+    alpha << 0.9, 3.8;
     tempD1 = (yp_dot + a * psi_dot) / xp_dot;
     double delta_min = (tempD1 - 0.07 > -1.)? tempD1 - 0.07 : -1.0;
     double delta_max = (tempD1 + 0.07 < 1.0)? tempD1 + 0.07 : 1.0;
@@ -214,11 +214,11 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
     
 // tune 20190110:
     //[15.8828, 0, 0, 0, 0, 18.1959, 0, 0];
-   /* u.xp_dot =15.87;   u.yp_dot = 0.6; u.psi_dot =0.223;
+  /*   u.xp_dot =15.87;   u.yp_dot = 0.6; u.psi_dot =0.223;
     u.epsi = 0.7665;  u.ey = 2.3;  u.s = 5.98959;  
 
     u.xp_dot =15.8828;   u.yp_dot = 0.6; u.psi_dot = 0.1;
-    u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;  */
+    u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;  */ 
 
 	//std::cout << "current state in safety_certificate:" << std::endl;
 	//u.print();
@@ -240,10 +240,13 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
 
     for (int i = 0; i < no_ob_active; ++i)
     {
-        double Ds = results_2[i].radius + 0.5;
+        double Ds = 0;
+        double dmax = 1.414; //maximum disturbance 
+        double k1_control = 3; 
+        double r_tube = dmax/k1_control; 
+        Ds = results_2[i].radius+r_tube+0.1;
         double theta_d_big = asin(Ds / results_2[i].norm_relpos) - asin((Ds - 0.1) / results_2[i].norm_relpos);
         double theta_d_small = theta_d_big / 1000;
-
         // TODO: double-check if beta_2 is initialized as "all false"
 
         if ((!gl.beta_2[i]) && (results_2[i].h_angle_fix > -theta_d_small)) gl.beta_2[i] = true;
@@ -317,6 +320,7 @@ Eigen::MatrixXi slack_mult_test(2, no_ob_active);
     double value_min = 1.0e8;
     // x_min = [0;0];
     double x_min[2] = {0.0, 0.0};
+    int i_min; 
 
     for (int i = 0; i < nu_combine; i++) // i <-> i_combine in .m file
     {
@@ -366,7 +370,7 @@ Eigen::MatrixXi slack_mult_test(2, no_ob_active);
             using namespace qpOASES;
             //SQProblem qp(2, 2);  //the second variable represents the number of the constraints 
             real_t H[4] = {1.0, 0.0, 0.0, 1.0};
-            real_t f2[2] = {-2 * u_nom(0), -2 * u_nom(1)};
+            real_t f2[2] = {-1 * u_nom(0), -1 * u_nom(1)};
             // const int size1 = A_n_and.size() * 2, size2 = b_n_and.size();
             real_t rtA_n_and[A_n_and.size() * 2], rtb_n_and[b_n_and.size()];
             // real_t rtA_n_and[size1], rtb_n_and[size2];
@@ -519,6 +523,7 @@ std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;
                 x_min[0] = rtOut[0];
                 x_min[1] = rtOut[1];
                 // Removed unused matrices A_min and b_min
+                i_min = i;
             }
         } // using namespace qpOASES
     } // for (i = 0 to nu_combine)
@@ -527,6 +532,7 @@ std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;
     std::cout << "value_min:  " << value_min << std::endl;
     std::cout << "alert:  " << alert << std::endl;
     std::cout << "gl.dead:  " << gl.dead << std::endl;
+    std::cout << "i_min:  " << i_min << std::endl;
 
     if((value_min < 1e8) && (!alert) && (!gl.dead))
     {
@@ -565,8 +571,11 @@ std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;
     else std::cerr << "WARNING: Unable to save data into the file <data_safety_certificate.txt>." << std::endl;
 
     //tunning, only use the nominal control: 
-    //out.x(0) = u_nom(0);
-    //out.x(1) = u_nom(1);
+    if (s> 100){
+     //out.x(0) = u_nom(0);
+     //out.x(1) = u_nom(1);
+        }
+ 
 
     return out;
 }

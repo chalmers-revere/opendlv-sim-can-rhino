@@ -134,7 +134,7 @@ int32_t main(int32_t argc, char **argv) {
                             std::ofstream txt(filename, std::ios::out | std::ios::app);
                             if (txt.is_open())
                             {
-                                txt << ((double)clock())/CLOCKS_PER_SEC << '\t'
+                                txt << m_dynamics.T_global << '\t'
                                     << nomStateMsg.xp_dot() << '\t' << nomStateMsg.yp_dot() << '\t' 
                                     << nomStateMsg.psi_dot() << '\t' << nomStateMsg.epsi() << '\t' 
                                     << nomStateMsg.ey() << '\t' << nomStateMsg.s() << '\t' 
@@ -288,7 +288,7 @@ int32_t main(int32_t argc, char **argv) {
 
 
 dynamics::dynamics():
-state_global({{8,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
+state_global({{10,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0}),
 diff_global({{0,0,0},{0,0,0},{0,0},0,0,0,0,0,0}),
 input_global({0,0,0,0}),
 PI (3.14159265),
@@ -405,7 +405,7 @@ Te ( 0)
 	/////////////////////////states/////////////////////////////////////
 	//the velocity of the vehicle, expressed in the body frame of the vehicle
 	for (int i = 0; i < 3; i++){
-		state_global.v_body[i] = ((0 == i) ? 8 : 0);
+		state_global.v_body[i] = ((0 == i) ? 10 : 0);
 		state_global.omega_body[i] = 0;  //angular velocity, body frame
 
 		diff_global.vb_dot[i] = 0;  //dot of velocity of body
@@ -424,6 +424,8 @@ Te ( 0)
 	diff_global.T_b_dot_general = 0; //dot of T_b
 	state_global.T_new_req = 0;
 	state_global.Ttop = 0;
+
+        state_global.s = 0;
 
 	//time step:
 	T_samp = 0.001;
@@ -929,9 +931,9 @@ void dynamics::integrator(bool verbose){
 			x4.T_b_general = state_global.T_b_general+ T_samp*k3.T_b_dot_general;
 			x4.Ttop = state_global.Ttop+ T_samp*k3.Ttop_dot;
 			x4.T_new_req = state_global.T_new_req+  T_samp*k3.T_new_req_dot;
-                        x4.epsi = state_global.epsi + 0.5*T_samp*k3.epsi_dot;
-                        x4.ey = state_global.ey + 0.5*T_samp*k3.ey_dot;
-                        x4.s = state_global.s + 0.5*T_samp*k3.s_dot;
+                        x4.epsi = state_global.epsi + T_samp*k3.epsi_dot;
+                        x4.ey = state_global.ey + T_samp*k3.ey_dot;
+                        x4.s = state_global.s + T_samp*k3.s_dot;
 			for(int i = 0; i < 3; i++){
 				x4.v_body[i] = state_global.v_body[i] + k3.vb_dot[i]*T_samp;
 				x4.omega_body[i] = state_global.omega_body[i] + k3.omegab_dot[i]*T_samp;

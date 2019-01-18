@@ -6,7 +6,7 @@ services:
     network_mode: "host"
     volumes:
     - /tmp:/tmp/
-    command: "opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=50 --save_file=/tmp/data_model_state.txt"
+    command: "opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=100 --save_file=/tmp/data_model_state.txt"
 
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.3 opendlv-sim-can-rhino --cid=113 --cid2=114 --freq=50 --verbose
   nominal_dynamics:
@@ -16,7 +16,7 @@ services:
     network_mode: "host"
     volumes:
     - /tmp:/tmp
-    command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=116 --nominal --freq=50 --save_file=/tmp/data_nominal_states.txt --verbose"
+    command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=116 --nominal --freq=100 --save_file=/tmp/data_nominal_states.txt --verbose"
 
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.3 virtual_control --cid=113 --freq=50 --save_file=/tmp/data_nominal_states.txt --verbose
   virtual_control:
@@ -26,7 +26,7 @@ services:
     network_mode: "host"
     volumes:
     - /tmp:/tmp
-    command: "virtual_control --cid=113 --freq=50 --verbose" 
+    command: "virtual_control --cid=113 --freq=100 --verbose" 
 
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.3 actual_control --cid=113 --cid2=114 --freq=50 --verbose
   actual_control:
@@ -36,7 +36,7 @@ services:
     network_mode: "host"
     volumes:
     - /tmp:/tmp/
-    command: "actual_control --cid=113 --cid2=114 --freq=50"
+    command: "actual_control --cid=113 --cid2=114 --freq=100"
 
 # $ docker run --rm -ti --net=host -p 8080:8080 chalmersrevere/opendlv-signal-viewer-multi:v0.0.8 --cid=114
   vehicle-view-web:
