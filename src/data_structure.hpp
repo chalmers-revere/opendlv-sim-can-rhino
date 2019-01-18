@@ -192,7 +192,7 @@ public:
 
     // the following three are initialised by constraint_obstacles.m
     std::vector<Obstacle> traj_ob{};
-    int no_ob{1};
+    int no_ob{2};
     // vector<Eigen::Vector2d> pos_ob_array_pre;
     // vector<double> radius_pre;
 
