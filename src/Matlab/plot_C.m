@@ -50,9 +50,16 @@ P_cente = P_sens;
 
  load data_traj_ob.txt;
 %  traj_ob_seris = data_traj_ob; 
-no_ob = size(data_traj_ob, 1);
-
  
+traj_ob_seris = data_traj_ob;
+%0815, traj_ob_seris: 2*n-by-no_ob
+no_ob = size(traj_ob_seris, 2);
+traj_ob_plot = zeros(2, size(traj_ob_seris,1)/3, no_ob);
+for i_ob =1:no_ob
+    for i_time =1:size(traj_ob_seris,1)/3
+        traj_ob_plot(:,i_time,i_ob) = traj_ob_seris((i_time-1)*3+1:(i_time-1)*3+2,i_ob);
+    end
+end
 
 % 
 % traj_ob_plot = zeros(2, length(t1), no_ob);
@@ -110,8 +117,7 @@ figure(1);
 dm = 1.414; %maximum disturbance 
 k1 = 3; 
 r_tube = dm/k1; 
-for ii = 1:100:len
-     
+for ii = 1:100:len     
     circle_tube(r_tube,P_nom(ii,1), P_nom(ii,2)); hold on;
 end
 
@@ -125,17 +131,17 @@ title('POSITION TRACKING:SENSED VS COMMAND');
 axis equal; 
 
 % global pos_ob_array_pre radius_pre;
-% %pos_ob_array_pre(2, :) = - pos_ob_array_pre(2,:);  %only for plot the mpc data with mistake 
-% for i=1:size(pos_ob_array_pre,2)
-%     plot(pos_ob_array_pre(1,i), pos_ob_array_pre(2,i), '*r'); hold on; 
-%     Ds = radius_pre(i);
-%     circle(Ds,pos_ob_array_pre(1,i), pos_ob_array_pre(2,i)); hold on; 
-% end
-% 
-% %the trajectory of the obstacles: 
-% for i_ob =1:no_ob    
-%     plot(traj_ob_plot(1,:,i_ob), traj_ob_plot(2,:,i_ob), 'LineWidth', 4); hold on; 
-% end
+%pos_ob_array_pre(2, :) = - pos_ob_array_pre(2,:);  %only for plot the mpc data with mistake 
+for i=1:no_ob
+    plot(traj_ob_plot(1,1,i), traj_ob_plot(2, 1,i), '*r'); hold on; 
+    Ds = traj_ob_seris(3, i);
+    circle(Ds,traj_ob_plot(1,1,i), traj_ob_plot(2, 1,i)); hold on; 
+end
+
+%the trajectory of the obstacles: 
+for i_ob =1:no_ob    
+    plot(traj_ob_plot(1,:,i_ob), traj_ob_plot(2,:,i_ob), 'LineWidth', 4); hold on; 
+end
  
  
 figure(2);   

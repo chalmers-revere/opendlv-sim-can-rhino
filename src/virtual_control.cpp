@@ -62,7 +62,7 @@ int32_t main(int32_t argc, char *argv[])
     // each row contains the following data, seperated by tab
     // pos_x  pos_y  vel_x  vel_y  acc_x  acc_y  radius
 
-    std::ofstream txt("/tmp/data_traj_ob.txt", std::ios::out);
+   /* std::ofstream txt("/tmp/data_traj_ob.txt", std::ios::out);
     if (txt.is_open())
     {
         for (uint8_t i = 0; i < gl.no_ob; ++i)
@@ -73,7 +73,7 @@ int32_t main(int32_t argc, char *argv[])
         }
         txt.close();
     }
-    else std::cerr << "WARNING: Unable to save data into the file <data_traj_ob.txt>." << std::endl;
+    else std::cerr << "WARNING: Unable to save data into the file <data_traj_ob.txt>." << std::endl;  */
 
 
     if (VERBOSE)
@@ -175,6 +175,28 @@ int32_t main(int32_t argc, char *argv[])
                     txt2.close();
                 }
                 else std::cerr << "WARNING: Unable to save data into the file <data_msg_nom_u.txt>." << std::endl;
+
+                std::ofstream txt("/tmp/data_traj_ob.txt", std::ios::out | std::ios::app );
+                if (txt.is_open())
+                {
+                for (uint8_t i = 0; i < gl.no_ob; ++i){
+                    Obstacle curr = gl.traj_ob[i];
+                    txt << curr.pos_x << '\t';                    
+                }
+                txt <<  '\n';
+                for (uint8_t i = 0; i < gl.no_ob; ++i){
+                    Obstacle curr = gl.traj_ob[i];
+                    txt << curr.pos_y << '\t';                    
+                }
+                txt <<  '\n';
+                for (uint8_t i = 0; i < gl.no_ob; ++i){
+                    Obstacle curr = gl.traj_ob[i];
+                    txt << curr.radius << '\t';                    
+                }
+                txt <<  '\n';
+                txt.close();
+                }
+                else std::cerr << "WARNING: Unable to save data into the file <data_traj_ob.txt>." << std::endl;
                 return false;
             }
         };

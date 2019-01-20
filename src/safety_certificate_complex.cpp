@@ -510,12 +510,12 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
             qp2.getPrimalSolution(rtOut);
             double FVAL = (qp2.isSolved()) ? (double)(qp2.getObjVal()) : (double)1e8;
 
-std::cout << "rtlb:  " <<rtlb[0] << ", " << rtlb[1] << std::endl;
-std::cout << "rtub:  " <<rtub[0] << ", " << rtub[1] << std::endl;
-std::cout << "f2:  " <<f2[0] << ", " << f2[1] << std::endl;
-std::cout << "A_n_and.size():  " << A_n_and.size() << std::endl;
-printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp2.getObjVal() );        
-std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;         
+            std::cout << "rtlb:  " <<rtlb[0] << ", " << rtlb[1] << std::endl;
+            std::cout << "rtub:  " <<rtub[0] << ", " << rtub[1] << std::endl;
+            std::cout << "f2:  " <<f2[0] << ", " << f2[1] << std::endl;
+            std::cout << "A_n_and.size():  " << A_n_and.size() << std::endl;
+            printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp2.getObjVal() );        
+            std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;         
 
             if (FVAL < value_min)
             {
@@ -543,15 +543,18 @@ std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;
     else
     {
         out.hasSolution = false;
-        if (false == gl.brake_flag) gl.state_brakeini = u;
-        double tempEpsi = atan(yp_dot / xp_dot) + epsi;
+        gl.brake_flag = true;
+
+        if ((true == gl.brake_flag) && (false == gl.brake_flag_pre)) gl.state_brakeini = u;
+        double tempEpsi = atan(gl.state_brakeini.yp_dot / gl.state_brakeini.xp_dot) + gl.state_brakeini.epsi;
         double am = -alpha(1);
         out.x(0) = m * am * sin(tempEpsi - epsi) / (2 * cf) 
-            + (m * psi_dot_com * pow(xp_dot, 2) + 2 * yp_dot * (cf + cr) + 2 * psi_dot * (a * cf + b * cr))
+            + (m * psi_dot_com * pow(xp_dot, 2) + 2 * yp_dot * (cf + cr) + 2 * psi_dot * (a * cf - b * cr))
                 / (2 * cf * xp_dot);
         out.x(1) = am * cos (epsi - tempEpsi) - psi_dot_com * yp_dot;
-        gl.brake_flag = true;
+        
     }
+    gl.brake_flag_pre = gl.brake_flag;
     out.value_min = value_min;
     out.coef = results_2[0];
 

@@ -105,12 +105,21 @@ int32_t main(int32_t argc, char **argv) {
                 m_dynamics.input_global.acc_x = received.acc();
                 m_dynamics.input_global.steering_angle = received.steer();
 
-		// m_dynamics.input_global.acc_x = 1.0;
-                // m_dynamics.input_global.steering_angle = 0; 
+		//publish data: 
                 {
+                        opendlv::sim::KinematicState kinematicMsg;
+                        kinematicMsg.vx((float)m_dynamics.GetLongitudinalVelocity());
+                        kinematicMsg.vy((float)m_dynamics.GetLateralVelocity());
+                        kinematicMsg.vz(0.0f);
+                        kinematicMsg.rollRate(0.0f);
+                        kinematicMsg.pitchRate(0.0f);
+                        kinematicMsg.yawRate((float)m_dynamics.GetYawVelocity());
+                        od4->send(kinematicMsg);
+
+                        if (VERBOSE) std::cout << "Current Kinematic states sent." << std::endl;
+
                         // 2018 Dec. Update: broadcast nominal states as well
-                        internal::nomState nomStateMsg;
-          
+                        internal::nomState nomStateMsg;          
                         nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
                         nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
                         nomStateMsg.psi_dot(m_dynamics.GetYawVelocity());
