@@ -9,7 +9,7 @@ u_ctrl = data_msg_nom_u(:,2:3); %nominal
 u_actual = data_msg_actual_u(:,2:3);  %actual 
 
 y1_nom = data_nominal_states(:,2:9);
-T_sampl_nom = 0.02; 
+T_sampl_nom = 0.01; 
 t = T_sampl_nom:T_sampl_nom:T_sampl_nom*size(y1_nom,1);
 
 y1_actual = data_model_state(:,2:9);

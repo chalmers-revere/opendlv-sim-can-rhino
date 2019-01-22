@@ -154,10 +154,11 @@ public:
 
     //Maximum steering angle
     double MAX_STEERING;
+        bool ifnominal;
 
 private:
 	double omega_e;
-	double Te;
+	double Te;        
 };
 
 

@@ -46,6 +46,7 @@ int32_t main(int32_t argc, char **argv) {
         auto filename{ifSave ? commandlineArguments["save_file"] : ""};
 
         const bool ifNominal{commandlineArguments.count("nominal") != 0};
+        m_dynamics.ifnominal = ifNominal; 
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
 //        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
@@ -101,7 +102,7 @@ int32_t main(int32_t argc, char **argv) {
         auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename](cluon::data::Envelope &&env)
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
-                if (VERBOSE) std::cout << "Nom_U received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
+                if (VERBOSE) std::cout << "Input received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
                 m_dynamics.input_global.acc_x = received.acc();
                 m_dynamics.input_global.steering_angle = received.steer();
 
@@ -116,9 +117,20 @@ int32_t main(int32_t argc, char **argv) {
                         kinematicMsg.yawRate((float)m_dynamics.GetYawVelocity());
                         od4->send(kinematicMsg);
 
-                        if (VERBOSE) std::cout << "Current Kinematic states sent." << std::endl;
+                        if (VERBOSE) std::cout << "Current kinematicMsg sent." << std::endl;
 
-                        // 2018 Dec. Update: broadcast nominal states as well
+                        opendlv::sim::Frame frameMsg;
+                        frameMsg.x((float)m_dynamics.state_global.s);
+                        frameMsg.y((float)m_dynamics.state_global.ey);
+                        frameMsg.z(0.0f);
+                        frameMsg.roll(0.0f);
+                        frameMsg.pitch(0.0f);
+                        frameMsg.yaw((float)m_dynamics.state_global.epsi);
+                        od4->send(frameMsg);
+
+                        if (VERBOSE) std::cout << "Current frameMsg sent." << std::endl;
+
+                        // 2018 Dec. Update: broadcast 8-D states: 
                         internal::nomState nomStateMsg;          
                         nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
                         nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
@@ -130,7 +142,7 @@ int32_t main(int32_t argc, char **argv) {
                         nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
 
                         od4->send(nomStateMsg);
-                        if (VERBOSE) std::cout << "Current nominal states sent: " 	
+                        if (VERBOSE) std::cout << "Current 8-D states sent: " 	
                            << "[" << nomStateMsg.xp_dot() << ", " << nomStateMsg.yp_dot() << ", " << nomStateMsg.psi_dot() << ", " << nomStateMsg.epsi() << ", " \
                            << nomStateMsg.ey() << ", " << nomStateMsg.s() << ", " << nomStateMsg.steer() << ", " << nomStateMsg.acc() << "]" << std::endl;
 
@@ -167,8 +179,9 @@ int32_t main(int32_t argc, char **argv) {
             else
             {
                 std::cout << "Vehicle sim model detected, receiving only request messages." << std::endl;
-                od4->dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
-                od4->dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
+                //od4->dataTrigger(opendlv::proxy::PedalPositionRequest::ID(), Input_Pedal);
+                //od4->dataTrigger(opendlv::proxy::GroundSteeringRequest::ID(), Input_Steer);
+                od4->dataTrigger(internal::nomU::ID(), Input_NomU);
             }
         }
 
@@ -801,13 +814,40 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
 
         if (state.v_body[0]> 1e-1)
         {
-            //linerized model:
+            //EOM: 
             out.vb_dot[0] = yp_dot*psi_dot + acc_x;   //dot xp_dot
             out.vb_dot[1] = -xp_dot*psi_dot -2*(cf+cr)/(m*xp_dot)*yp_dot-2*(a*cf-b*cr)/m/xp_dot*psi_dot + 2*cf/m*steering_angle;   // dot yp_dot
             out.omegab_dot[2] = -2*(a*cf-b*cr)/Iz/xp_dot*yp_dot-2*(a*a*cf+b*b*cr)/Iz/xp_dot*psi_dot + 2*a*cf/Iz*steering_angle;   //dot  psi_dot
             out.epsi_dot =  psi_dot - psi_dot_com;    // dot epsi
             out.ey_dot =  yp_dot*cos(epsi) + xp_dot*sin(epsi);    // dot ey
             out.s_dot =  xp_dot*cos(epsi)-yp_dot*sin(epsi);     // dot s
+
+            //disturbance:
+             double distur[6];
+             double pi = 3.14159265;
+             distur[0] = 1*(double)rand() / RAND_MAX-0.5;
+             distur[1] = 1*(double)rand() / RAND_MAX -0.5; 
+             distur[2] = 1*(double)rand() / RAND_MAX -0.5; 
+             distur[3] = 0.2*(double)rand() / RAND_MAX-0.1; 
+             distur[4] = 2*(double)rand() / RAND_MAX-1; 
+             distur[5] = 2*(double)rand() / RAND_MAX-1;
+
+             double r_dxy = 2*(double)rand() / RAND_MAX;
+             double theta_dxy = 2*pi*(double)rand() / RAND_MAX;
+             double dis_ey = r_dxy*cos(theta_dxy);
+             double dis_s = r_dxy*sin(theta_dxy);
+             distur[4] = dis_ey;
+             distur[5] = dis_s;
+
+            if(!ifnominal){
+                out.vb_dot[0] +=  2*distur[0];
+                out.vb_dot[1] += 2*distur[1];
+                out.omegab_dot[2] += 2*distur[2];
+                out.epsi_dot += 2*distur[3];
+                out.ey_dot += 2*distur[4];
+                out.s_dot += 2*distur[5];
+               // std::cout << "disturbance is added!"<< std::endl;
+            }
         }
         else
         {
@@ -819,6 +859,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
             out.ey_dot =  0;    // dot ey
             out.s_dot =  0 ;     // dot s
         }
+
 
 
 
