@@ -52,11 +52,10 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
        tra_com_dot(1) = 1;
 tra_com_dot(2) =1;   */
       
-
-    std::cerr << "reference trajactory: " << tra_com(1) << " ," << tra_com(2) << " ,"  << tra_com_dot(1) << " ," << tra_com_dot(2) << " ," << 
+    if (gl.isVerbose){
+        std::cerr << "reference trajactory: " << tra_com(1) << " ," << tra_com(2) << " ,"  << tra_com_dot(1) << " ," << tra_com_dot(2) << " ," << 
 	tra_com_ddot(1) << " ," << tra_com_ddot(2) << " ," <<  std::endl;
-
-
+    }
 	//gl.print();
 
     // Eigen::Vector3d tra_com_dddot; // unused
@@ -65,14 +64,8 @@ tra_com_dot(2) =1;   */
     // constants
    // double a = 1.41, b = 1.576, mu = 0.5, Fzf = 21940.0/2, Fzr = 21940.0/2;
    // double cf = 65000.0, cr = 65000.0, m = 2194.0, Iz = 4770.0;
-		    double a = 1.68, b = 1.715, mu = 3.4812e+05, Fzf = 21940.0/2, Fzr = 21940.0/2;   //yu 
-		/*a(1.68),
-		b(1.715),
-		cf (3.4812e+05),
-		cr (3.5537e+05),
-		m (9840),
-		Iz (41340),*/
-		    double cf = 3.4812e+05, cr = 3.5537e+05, m = 9840.0, Iz = 41340.0;
+    double a = 1.68, b = 1.715, mu = 3.4812e+05, Fzf = 21940.0/2, Fzr = 21940.0/2;  
+    double cf = 3.4812e+05, cr = 3.5537e+05, m = 9840.0, Iz = 41340.0;
 
     double psi_dot_com = 0.0, p = Iz / (m * b);
 
@@ -140,15 +133,10 @@ tra_com_dot(2) =1;   */
     	2*cr*yp_dot + 2*a*cf*psi_dot - 2*b*cr*psi_dot))/(m*xp_dot^2) - (4*sin(epsi)*(a*cf - b*cr)*
     	(a*cf*yp_dot - b*cr*yp_dot + a^2*cf*psi_dot + b^2*cr*psi_dot - a*cf*steer*xp_dot))/(Iz*m*xp_dot^2)];  */
 
- 
-
-
-
     Eigen::Matrix2d k1, k2, k3;
     k1 << 5 * 2.2361, 0, 0, 5 * 2.2361;
     k2 << 5 * 3.0187, 0, 0, 5 * 3.0187;
     k3 << 5 * 3.9382, 0, 0, 5 * 3.9382;
-
 
     Eigen::Vector2d u_nom_lin, u_nom;
     Eigen::Vector2d tempV2d, tempTail0, tempTail1, tempTail2;
@@ -172,7 +160,6 @@ std::cout << "tempTail1:  " << tempTail1 << std::endl;
 std::cout << "tempTail2:  " << tempTail2 << std::endl;
 std::cout << "tempV2d:  " << tempV2d << std::endl; */
 
-
    //20190107: 
     k1 << 9, 0, 0, 9;
     k2 << 2*1.414*3, 0, 0, 2*1.414*3;
@@ -191,13 +178,7 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
  
      //u_nom_lin = - k1 * (tempV2d - tempTail0) - k2 * (L_f_output - tempTail1) ;
      //u_nom = L_g_f_output.inverse() * (u_nom_lin - L_f_f_output);
-
-
-   //tune: 
-    //u_nom << 0, 1; 
-
-
-
+ 
 
     if (xp_dot < 1e-2) xp_dot = 1e-2;
 
@@ -210,7 +191,6 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
     bool flag_bound = false, alert = false;
     gl.dead = false;
     // line 83 so far
-
     
 // tune 20190110:
     //[15.8828, 0, 0, 0, 0, 18.1959, 0, 0];
@@ -313,10 +293,8 @@ Eigen::MatrixXi slack_mult_test(2, no_ob_active);
         }
     }
  
-
-    std::cout << "order: " << order << std::endl;
-
-
+    if (gl.isVerbose)  std::cout << "order: " << order << std::endl;
+     
     double value_min = 1.0e8;
     // x_min = [0;0];
     double x_min[2] = {0.0, 0.0};
@@ -496,12 +474,14 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
                 rtA_new[2 * i] = (abs(A_n_and[i][0]) < 1e-4) ? 0 : A_n_and[i][0];
                 rtA_new[2 * i + 1] = (abs(A_n_and[i][1]) < 1e-4) ? 0 : A_n_and[i][1];
 
-                std::cout << "rtA_new " << 2*i  << ": " << rtA_new[2 * i]  <<  std::endl;
-		std::cout << "rtA_new " << 2 * i + 1  << ": " << rtA_new[2 * i + 1]  <<  std::endl;
+                if (gl.isVerbose){
+                        std::cout << "rtA_new " << 2*i  << ": " << rtA_new[2 * i]  <<  std::endl;
+		        std::cout << "rtA_new " << 2 * i + 1  << ": " << rtA_new[2 * i + 1]  <<  std::endl;
+                }
             }
             for (int i = 0; i < b_n_and.size(); i++){
                 rtb_new[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
-                std::cout << "rtb_new " << i  << ": " << rtb_new[i] <<  std::endl;
+                if (gl.isVerbose)  std::cout << "rtb_new " << i  << ": " << rtb_new[i] <<  std::endl;
             }
 
             SQProblem qp2(2, A_n_and.size());  //the second variable represents the number of the constraints 
@@ -510,12 +490,15 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
             qp2.getPrimalSolution(rtOut);
             double FVAL = (qp2.isSolved()) ? (double)(qp2.getObjVal()) : (double)1e8;
 
-            std::cout << "rtlb:  " <<rtlb[0] << ", " << rtlb[1] << std::endl;
-            std::cout << "rtub:  " <<rtub[0] << ", " << rtub[1] << std::endl;
-            std::cout << "f2:  " <<f2[0] << ", " << f2[1] << std::endl;
-            std::cout << "A_n_and.size():  " << A_n_and.size() << std::endl;
-            printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp2.getObjVal() );        
-            std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;         
+            if (gl.isVerbose){
+                    std::cout << "rtlb:  " <<rtlb[0] << ", " << rtlb[1] << std::endl;
+                    std::cout << "rtub:  " <<rtub[0] << ", " << rtub[1] << std::endl;
+                    std::cout << "f2:  " <<f2[0] << ", " << f2[1] << std::endl;
+                    std::cout << "A_n_and.size():  " << A_n_and.size() << std::endl;
+                    printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp2.getObjVal() );  
+                    std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;    
+            }  
+                     
 
             if (FVAL < value_min)
             {
@@ -529,10 +512,12 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
     } // for (i = 0 to nu_combine)
     // line 288 so far
 
+    if (gl.isVerbose){
     std::cout << "value_min:  " << value_min << std::endl;
     std::cout << "alert:  " << alert << std::endl;
     std::cout << "gl.dead:  " << gl.dead << std::endl;
     std::cout << "i_min:  " << i_min << std::endl;
+    }
 
     if((value_min < 1e8) && (!alert) && (!gl.dead))
     {

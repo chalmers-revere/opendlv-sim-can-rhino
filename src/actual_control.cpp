@@ -93,7 +93,7 @@ int32_t main(int32_t argc, char *argv[])
         }
     });
     cluon::OD4Session od4_2(CID2, [&real_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
-        /*if (env.dataType() == opendlv::sim::Frame::ID())
+        if (env.dataType() == opendlv::sim::Frame::ID())
         {
             opendlv::sim::Frame received = cluon::extractMessage<opendlv::sim::Frame>(std::move(env));
             real_state.s = received.x();
@@ -117,8 +117,8 @@ int32_t main(int32_t argc, char *argv[])
                 std::cout << "Vehicle velocity updated:" << std::endl;
                 std::cout << "vx:" << real_state.xp_dot << ", y:" << real_state.yp_dot << ", yawRate:" << real_state.psi_dot << std::endl;
             }
-        }*/
-        if (env.dataType() == internal::nomState::ID())
+        }
+        /*if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
             real_state = FB_state(received.xp_dot(), received.yp_dot(), received.psi_dot(), received.epsi(), received.ey(), received.s(), received.steer(), received.acc());
@@ -127,7 +127,7 @@ int32_t main(int32_t argc, char *argv[])
                 std::cout << "New actual state received:" << std::endl;
                 real_state.print(); 
             }
-        }
+        }*/
     });
     if (0 == od4.isRunning())
     {

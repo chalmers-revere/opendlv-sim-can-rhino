@@ -500,9 +500,11 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             gl.dead = true;
             dis_maxacc_sqr = 0.000001;
         }
-std::cout << "dis_maxacc_sqr: " << dis_maxacc_sqr << std::endl;
-std::cout << "rel_pos: " << rel_pos[0] << ", "  << rel_pos[1] << ", " << std::endl;
-std::cout << "rel_vel: " << rel_vel[0] << ", "  << rel_vel[1] << ", " << std::endl;
+        if (gl.isVerbose){
+                std::cout << "dis_maxacc_sqr: " << dis_maxacc_sqr << std::endl;
+                std::cout << "rel_pos: " << rel_pos[0] << ", "  << rel_pos[1] << ", " << std::endl;
+                std::cout << "rel_vel: " << rel_vel[0] << ", "  << rel_vel[1] << ", " << std::endl;
+        }
 
         double h_vel = sqrt(dis_maxacc_sqr) + (rel_pos.adjoint() * rel_vel)(0) / rel_pos.norm();
         // line 318 so far
@@ -604,13 +606,14 @@ std::cout << "rel_vel: " << rel_vel[0] << ", "  << rel_vel[1] << ", " << std::en
 
         res.push_back(c);
 
-	//tune: 
+	if (gl.isVerbose){
 	std::cout << "current state in constraint:" << std::endl;
 	u.print();
 	//std::cerr << "No of obstacles: " << ob_array.size()  <<  std::endl;
 	std::cout << "obstacle " << i << std::endl;
         ob_array[i].print();
 	c.print();
+        }
 
     } // for each ob in ob_array
     return res;

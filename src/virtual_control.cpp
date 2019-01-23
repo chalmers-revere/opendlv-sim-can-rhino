@@ -130,35 +130,21 @@ int32_t main(int32_t argc, char *argv[])
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
 
 		//tunning, why always the same? 20190103
-		std::cout << "current state in virtual control:" << std::endl;
-                nom_state.print(); 
+		if (VERBOSE) {
+                  std::cout << "current state in virtual control:" << std::endl;
+                  nom_state.print(); 
+                }
 
                 gl.nosolution = !(correct.hasSolution);
 
                 internal::nomU msgNomU;
-                /*if (gl.nosolution)
-                {
-                    // std::cerr << "WARNING: No solution detected from solver!!" << std::endl;
-                    msgNomU.acc(0.0);
-                    msgNomU.steer(0.0);
-                }
-                else
-                {
-                    msgNomU.acc(correct.x(1));
-                    msgNomU.steer(correct.x(0));
-                }*/
-
-                //20190107, tune, notice the order:                 
+                //  notice the order:                 
                 msgNomU.steer(correct.x(0));
 		msgNomU.acc(correct.x(1));
 
                // msgNomU.steer(0);
 	       // msgNomU.acc(1);
-
-		//where is it?  msgNomU    
-                //msgNomU.acc(3); msgNomU.steer(4);  //just tunning
                 od4.send(msgNomU);
-
 		
                 if (VERBOSE)
                 {	            

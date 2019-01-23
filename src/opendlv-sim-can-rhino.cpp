@@ -99,7 +99,7 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
-        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename](cluon::data::Envelope &&env)
+        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename, &ifNominal](cluon::data::Envelope &&env)
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
                 if (VERBOSE) std::cout << "Input received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
@@ -108,43 +108,55 @@ int32_t main(int32_t argc, char **argv) {
 
 		//publish data: 
                 {
-                        opendlv::sim::KinematicState kinematicMsg;
-                        kinematicMsg.vx((float)m_dynamics.GetLongitudinalVelocity());
-                        kinematicMsg.vy((float)m_dynamics.GetLateralVelocity());
-                        kinematicMsg.vz(0.0f);
-                        kinematicMsg.rollRate(0.0f);
-                        kinematicMsg.pitchRate(0.0f);
-                        kinematicMsg.yawRate((float)m_dynamics.GetYawVelocity());
-                        od4->send(kinematicMsg);
+                        internal::nomState nomStateMsg;
+                        if (!ifNominal){
+                                opendlv::sim::KinematicState kinematicMsg;
+                                kinematicMsg.vx((float)m_dynamics.GetLongitudinalVelocity());
+                                kinematicMsg.vy((float)m_dynamics.GetLateralVelocity());
+                                kinematicMsg.vz(0.0f);
+                                kinematicMsg.rollRate(0.0f);
+                                kinematicMsg.pitchRate(0.0f);
+                                kinematicMsg.yawRate((float)m_dynamics.GetYawVelocity());
+                                od4->send(kinematicMsg);
 
-                        if (VERBOSE) std::cout << "Current kinematicMsg sent." << std::endl;
+                                if (VERBOSE) std::cout << "Current kinematicMsg sent." << std::endl;
 
-                        opendlv::sim::Frame frameMsg;
-                        frameMsg.x((float)m_dynamics.state_global.s);
-                        frameMsg.y((float)m_dynamics.state_global.ey);
-                        frameMsg.z(0.0f);
-                        frameMsg.roll(0.0f);
-                        frameMsg.pitch(0.0f);
-                        frameMsg.yaw((float)m_dynamics.state_global.epsi);
-                        od4->send(frameMsg);
+                                opendlv::sim::Frame frameMsg;
+                                frameMsg.x((float)m_dynamics.state_global.s);
+                                frameMsg.y((float)m_dynamics.state_global.ey);
+                                frameMsg.z(0.0f);
+                                frameMsg.roll(0.0f);
+                                frameMsg.pitch(0.0f);
+                                frameMsg.yaw((float)m_dynamics.state_global.epsi);
+                                od4->send(frameMsg);
 
-                        if (VERBOSE) std::cout << "Current frameMsg sent." << std::endl;
+                                if (VERBOSE) std::cout << "Current frameMsg sent." << std::endl;
+                                          
+                                nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
+                                nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
+                                nomStateMsg.psi_dot(m_dynamics.GetYawVelocity());
+                                nomStateMsg.epsi(m_dynamics.state_global.epsi);
+                                nomStateMsg.ey(m_dynamics.state_global.ey);
+                                nomStateMsg.s(m_dynamics.state_global.s);
+                                nomStateMsg.steer(m_dynamics.GetRoadWheelAngle());
+                                nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
+                        }
+                        else{
+                                // 2018 Dec. Update: broadcast 8-D states:                                           
+                                nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
+                                nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
+                                nomStateMsg.psi_dot(m_dynamics.GetYawVelocity());
+                                nomStateMsg.epsi(m_dynamics.state_global.epsi);
+                                nomStateMsg.ey(m_dynamics.state_global.ey);
+                                nomStateMsg.s(m_dynamics.state_global.s);
+                                nomStateMsg.steer(m_dynamics.GetRoadWheelAngle());
+                                nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
 
-                        // 2018 Dec. Update: broadcast 8-D states: 
-                        internal::nomState nomStateMsg;          
-                        nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
-                        nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
-                        nomStateMsg.psi_dot(m_dynamics.GetYawVelocity());
-                        nomStateMsg.epsi(m_dynamics.state_global.epsi);
-                        nomStateMsg.ey(m_dynamics.state_global.ey);
-                        nomStateMsg.s(m_dynamics.state_global.s);
-                        nomStateMsg.steer(m_dynamics.GetRoadWheelAngle());
-                        nomStateMsg.acc(m_dynamics.GetAcceleratorPedalPosition());
-
-                        od4->send(nomStateMsg);
-                        if (VERBOSE) std::cout << "Current 8-D states sent: " 	
-                           << "[" << nomStateMsg.xp_dot() << ", " << nomStateMsg.yp_dot() << ", " << nomStateMsg.psi_dot() << ", " << nomStateMsg.epsi() << ", " \
-                           << nomStateMsg.ey() << ", " << nomStateMsg.s() << ", " << nomStateMsg.steer() << ", " << nomStateMsg.acc() << "]" << std::endl;
+                                od4->send(nomStateMsg);
+                                if (VERBOSE) std::cout << "Current 8-D states sent: " 	
+                                   << "[" << nomStateMsg.xp_dot() << ", " << nomStateMsg.yp_dot() << ", " << nomStateMsg.psi_dot() << ", " << nomStateMsg.epsi() << ", " \
+                                   << nomStateMsg.ey() << ", " << nomStateMsg.s() << ", " << nomStateMsg.steer() << ", " << nomStateMsg.acc() << "]" << std::endl;
+                        }
 
                         // Data saving into txt file (if "save_file" indicated)
                         // number of rows = length of time 
