@@ -48,7 +48,7 @@ int32_t main(int32_t argc, char *argv[])
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-    FB_state nom_state(6.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(12.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 

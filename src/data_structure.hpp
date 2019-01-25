@@ -27,6 +27,11 @@
 #include <ctime>
 #include <cmath>
 
+#include "rt_nonfinite.h"
+#include "L_f_L_f_h_ang_Ccode.h"
+#include "L_f_L_f_h_ang_Ccode_terminate.h"
+#include "L_f_L_f_h_ang_Ccode_initialize.h"
+
 class FB_state
 {
 public:
@@ -241,7 +246,7 @@ public:
             do
             {
                 curr.radius = 1.5 + 0.5 * (double)rand() / RAND_MAX;
-                curr.pos_x = 30 + 90 * (double)rand() / RAND_MAX;
+                curr.pos_x = 50 + 110 * (double)rand() / RAND_MAX;
                 curr.pos_y = -1.2 + 2.4 * (double)rand() / RAND_MAX;
 
 		//tune 20190110:

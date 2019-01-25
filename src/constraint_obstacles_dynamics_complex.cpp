@@ -30,6 +30,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     vector<Coefficient> res{};
     double xp_dot = u.xp_dot, yp_dot = u.yp_dot, psi_dot = u.psi_dot;
     double epsi = u.epsi, ey = u.ey, s = u.s; 
+    double steer = u.steer, acc = u.acc;
     vector<Obstacle> traj_ob = gl.traj_ob;
     
     double dis_thresh = 600;
@@ -386,7 +387,8 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
 */
 
 
-                                double L_t_h_ang_part1 = -((ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y
+
+              double L_t_h_ang_part1 = -((ey * vel_ob_x + pos_ob_x * vel_ob_y - pos_ob_y * vel_ob_x - s * vel_ob_y
                     - ey * xp_dot * cos(epsi) + pos_ob_y * xp_dot * cos(epsi) - pos_ob_x * yp_dot * cos(epsi)
                     + s * yp_dot * cos(epsi) + ey * yp_dot * sin(epsi) - pos_ob_x * xp_dot * sin(epsi)
                     - pos_ob_y * yp_dot * sin(epsi) + s * xp_dot * sin(epsi))
@@ -469,7 +471,6 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             double L_g_h_ang = L_g_h_ang_part1 - asin_dot * temp_d * L_g_h_ang_part2;
             double L_t_h_ang = L_t_h_ang_part1 - asin_dot * temp_d * L_t_h_ang_part2;
             // line 288 so far
-
 /*
 
             //tune:
@@ -484,11 +485,69 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
             std::cout << "L_t_h_ang: " << L_t_h_ang << std::endl;
 */
 
-
-
-            A_n_angle_fix(0) = - L_g_h_ang;
-            b_n_angle_fix = L_f_h_ang + L_t_h_ang + 3 * h_ang;
+           // A_n_angle_fix(0) = - L_g_h_ang;  //does not consider the actuator dynamics 
+           // b_n_angle_fix = L_f_h_ang + L_t_h_ang + 3 * h_ang; //does not consider the actuator dynamics 
             // line 297 so far
+
+        //20190126, consider the 1-st order actuator dynamics:
+        //test the code from MATLAB coder:
+        /*yp_dot = 1;
+        psi_dot =1;
+        epsi =1;
+        ey= 1;
+        s = 1;
+        pos_ob_x = 10;  pos_ob_y= 1;
+        vel_ob_x = 1; vel_ob_y= 1;
+        acc_ob_x = 1; acc_ob_y= 1;
+        Ds = 1;
+        a_m = 4;
+        xp_dot= 1;
+        a = 1.68;
+        b = 1.715;
+        cf =  3.4812e+05;
+        cr = 3.5537e+05;
+        m = 9840;
+        Iz = 41340;
+        psi_dot_com = 0;
+        steer = 0.13;
+        acc = -1.2; */
+
+        double out_L_f_L_f_h_ang_Ccode[8];
+        double L_f_L_f_h_ang, L_f_L_t_h_ang, L_g_L_f_h_ang;
+        Eigen::VectorXd p_x_p_Lgh_baru(5);
+        L_f_L_f_h_ang_Ccode(yp_dot, psi_dot, epsi, ey, s, pos_ob_x, pos_ob_y, vel_ob_x, vel_ob_y, acc_ob_x, acc_ob_y, Ds, a_m, xp_dot, a ,b, cf, cr, m, Iz, psi_dot_com, steer, acc, out_L_f_L_f_h_ang_Ccode);
+        L_f_L_f_h_ang = out_L_f_L_f_h_ang_Ccode[0];
+        L_f_L_t_h_ang = out_L_f_L_f_h_ang_Ccode[1];
+        L_g_L_f_h_ang = out_L_f_L_f_h_ang_Ccode[2];
+        p_x_p_Lgh_baru << out_L_f_L_f_h_ang_Ccode[3], out_L_f_L_f_h_ang_Ccode[4], out_L_f_L_f_h_ang_Ccode[5],
+        out_L_f_L_f_h_ang_Ccode[6], out_L_f_L_f_h_ang_Ccode[7];
+
+        /*std::cout << "L_f_L_f_h_ang: " << L_f_L_f_h_ang << std::endl;
+        std::cout << "L_f_L_t_h_ang: " << L_f_L_t_h_ang << std::endl;
+        std::cout << "L_g_L_f_h_ang: " << L_g_L_f_h_ang << std::endl;
+        std::cout << "p_x_p_Lgh_baru: " << p_x_p_Lgh_baru << std::endl; */
+
+        Eigen::VectorXd f_x_act(5), g_x_act(5);
+        f_x_act<< -2*(cf+cr)/(m*xp_dot)*yp_dot-2*(a*cf-b*cr)/m/xp_dot*psi_dot-xp_dot*psi_dot,
+                 -2*(a*cf-b*cr)/Iz/xp_dot*yp_dot-2*(a*a*cf+b*b*cr)/Iz/xp_dot*psi_dot,
+                 psi_dot - psi_dot_com,
+                 yp_dot*cos(epsi) + xp_dot*sin(epsi),
+                 xp_dot*cos(epsi)-yp_dot*sin(epsi);
+         g_x_act <<2*cf/m,
+            2*a*cf/Iz,
+            0,
+            0,
+            0;
+
+        double ka = 3;  //parameter of the 1st-order actuator dynamics
+
+        //cbf:
+        double a2 =  9;   double a1=2*1.414*sqrt(a2);
+        A_n_angle_fix(0) = -L_g_h_ang*ka;
+        Eigen::VectorXd temp_bn(5);
+        temp_bn = f_x_act+g_x_act*steer;
+        b_n_angle_fix = p_x_p_Lgh_baru.dot(temp_bn)-L_g_h_ang*ka*steer + L_f_L_f_h_ang + L_g_L_f_h_ang*steer +
+        L_f_L_t_h_ang + a1*(L_f_h_ang + L_t_h_ang + L_g_h_ang*steer) + a2*h_ang;
 
         } // line 303 so far
 

@@ -101,7 +101,7 @@ add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}.c
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 # Virtual control
-add_executable(virtual_control ${CMAKE_CURRENT_SOURCE_DIR}/src/virtual_control.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/safety_certificate_complex.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/constraint_obstacles_dynamics_complex.cpp ${qpOASESFiles} $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
+add_executable(virtual_control ${CMAKE_CURRENT_SOURCE_DIR}/src/virtual_control.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/safety_certificate_complex.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/constraint_obstacles_dynamics_complex.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/L_f_L_f_h_ang_Ccode.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/L_f_L_f_h_ang_Ccode_initialize.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/L_f_L_f_h_ang_Ccode_terminate.cpp  ${CMAKE_CURRENT_SOURCE_DIR}/src/rt_nonfinite.cpp  ${CMAKE_CURRENT_SOURCE_DIR}/src/rtGetInf.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/rtGetNaN.cpp ${qpOASESFiles} $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(virtual_control ${LIBRARIES})
 
 # Actual control
