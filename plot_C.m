@@ -198,20 +198,41 @@ ylabel('\dot \psi(rad/s)');
  
  figure(4); 
  subplot(2,1,1);
-  plot(t, u_ctrl(:,1)); 
-ylabel('u_{nom}, a_x(m/s^2)');
+  plot(t, u_ctrl(:,1));  title('nominal control'); 
+ylabel(' a_x(m/s^2)');
  subplot(2,1,2);
   plot(t, u_ctrl(:,2)); 
-ylabel('u_{nom}, steer(rad)');
+ylabel(' steer(rad)');
  xlabel('time(s)');
- title('nominal control'); 
+ 
  
  figure(5); 
  subplot(2,1,1);
-  plot(t_actual, u_actual(:,1)); 
-ylabel('u_{nom}, a_x(m/s^2)');
+  plot(t_actual, u_actual(:,1));  title('actual control'); 
+ylabel('  a_x(m/s^2)');
  subplot(2,1,2);
   plot(t_actual, u_actual(:,2)); 
-ylabel('u_{nom}, steer(rad)');
+ylabel('  steer(rad)');
  xlabel('time(s)');
- title('actual control'); 
+ 
+ 
+  figure(6); 
+ subplot(2,1,1);
+  plot(t, y1_nom(:,8));  title('nominal control, filtered'); 
+ylabel('  a_x(m/s^2)');
+ subplot(2,1,2);
+  plot(t, y1_nom(:,7)); 
+ylabel('  steer(rad)');
+ xlabel('time(s)');
+ 
+ 
+   figure(7); 
+ subplot(2,1,1);
+  plot(t_actual, y1_actual(:,8));  title('actual control, filtered'); 
+ylabel('  a_x(m/s^2)');
+ subplot(2,1,2);
+  plot(t_actual, y1_actual(:,7)); 
+ylabel('  steer(rad)');
+ xlabel('time(s)');
+ 
+ 

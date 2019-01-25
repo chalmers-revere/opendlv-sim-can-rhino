@@ -70,7 +70,7 @@ tra_com_dot(2) =1;   */
     double psi_dot_com = 0.0, p = Iz / (m * b);
 
     Eigen::Vector2d L_F_output, L_F_F_output;
-    double ka_steer = 10.0, ka_acc = 10.0;
+    double ka_steer = 3.0, ka_acc = 3.0;
 
     L_F_output << yp_dot * cos(epsi) + xp_dot * sin(epsi), xp_dot * cos(epsi) - yp_dot * sin(epsi);
 
@@ -183,13 +183,13 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
     if (xp_dot < 1e-2) xp_dot = 1e-2;
 
     Eigen::Vector2d alpha;
-    alpha << 0.9, 3.8;
+    alpha << 0.9, 1.8;
     tempD1 = (yp_dot + a * psi_dot) / xp_dot;
     double delta_min = (tempD1 - 0.07 > -1.)? tempD1 - 0.07 : -1.0;
     double delta_max = (tempD1 + 0.07 < 1.0)? tempD1 + 0.07 : 1.0;
 
     bool flag_bound = false, alert = false;
-    gl.dead = false;
+    //gl.dead = false;
     // line 83 so far
     
 // tune 20190110:
@@ -519,7 +519,7 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
     std::cout << "i_min:  " << i_min << std::endl;
     }
 
-    if((value_min < 1e8) && (!alert) && (!gl.dead))
+    if((value_min < 1e8) && (!alert) && (!gl.dead)) 
     {
         out.x <<  x_min[0], x_min[1];
         out.hasSolution = true;
@@ -540,6 +540,7 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
         
     }
     gl.brake_flag_pre = gl.brake_flag;
+    gl.dead_pre = gl.dead; 
     out.value_min = value_min;
     out.coef = results_2[0];
 

@@ -76,7 +76,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     double k1_control = 3; 
     double r_tube = dmax/k1_control;      
     // parameters and constants
-    double ck = 1.0, ey_pos = 3.7-r_tube, ey_neg = -3.7+r_tube, a_m = 3.8;
+    double ck = 1.0, ey_pos = 3.7-r_tube, ey_neg = -3.7+r_tube, a_m = 1.8;
     double a = 1.68, b = 1.715, mu = 3.4812e+05, Fzf = 21940.0/2, Fzr = 21940.0/2;    
     double cf = 3.4812e+05, cr = 3.5537e+05, m = 9840.0, Iz = 41340.0;
     double psi_dot_com = 0.0, p = Iz / (m * b);
@@ -144,7 +144,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
         rel_vel << v_vehicle(0) - vel_ob_x, v_vehicle(1) - vel_ob_y;
         // line 201 so far
 
-        double Ds = ob_array[i].radius + r_tube + 0.0; 
+        double Ds = ob_array[i].radius + r_tube + 0.1; 
         double cos_rel_ang = -(rel_pos.adjoint() * rel_vel)(0);
         cos_rel_ang /= rel_pos.norm();
         cos_rel_ang /= rel_vel.norm();

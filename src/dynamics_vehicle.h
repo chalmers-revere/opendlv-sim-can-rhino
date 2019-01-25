@@ -27,6 +27,8 @@ typedef struct
         double ey;
         double s;
 
+        double steering_angle_bar; 
+        double acc_x_bar; 
 } state_vehicle;
 
 typedef struct
@@ -42,6 +44,8 @@ typedef struct
         double epsi_dot;
         double ey_dot;
         double s_dot;
+        double steering_angle_bar_dot; 
+        double acc_x_bar_dot; 
 } diff_vehicle;
 
 typedef struct

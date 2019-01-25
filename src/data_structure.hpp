@@ -206,7 +206,7 @@ public:
     // vector<Eigen::VectorXd> u_ctrl;
 
     // Unlisted global variables
-    bool dead{false};
+    bool dead{false}, dead_pre{false};
     FB_state state_brakeini{};
     Global_variables()
     {
@@ -241,7 +241,7 @@ public:
             do
             {
                 curr.radius = 1.5 + 0.5 * (double)rand() / RAND_MAX;
-                curr.pos_x = 16 + 80 * (double)rand() / RAND_MAX;
+                curr.pos_x = 30 + 90 * (double)rand() / RAND_MAX;
                 curr.pos_y = -1.2 + 2.4 * (double)rand() / RAND_MAX;
 
 		//tune 20190110:
