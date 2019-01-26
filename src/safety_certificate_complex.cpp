@@ -533,6 +533,7 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
         if ((true == gl.brake_flag) && (false == gl.brake_flag_pre)) gl.state_brakeini = u;
         double tempEpsi = atan(gl.state_brakeini.yp_dot / gl.state_brakeini.xp_dot) + gl.state_brakeini.epsi;
         double am = -alpha(1);
+        am = -5;
         out.x(0) = m * am * sin(tempEpsi - epsi) / (2 * cf) 
             + (m * psi_dot_com * pow(xp_dot, 2) + 2 * yp_dot * (cf + cr) + 2 * psi_dot * (a * cf - b * cr))
                 / (2 * cf * xp_dot);

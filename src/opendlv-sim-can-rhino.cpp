@@ -838,7 +838,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
             out.ey_dot =  yp_dot*cos(epsi) + xp_dot*sin(epsi);    // dot ey
             out.s_dot =  xp_dot*cos(epsi)-yp_dot*sin(epsi);     // dot s
             out.steering_angle_bar_dot = -ka_steer* steering_angle_bar + ka_steer*steering_angle;
-            out.acc_x_bar_dot = -ka_acc* acc_x_bar + ka_steer*acc_x;
+            out.acc_x_bar_dot = -ka_acc* acc_x_bar + ka_acc*acc_x;
 
             //disturbance:
              double distur[6];
