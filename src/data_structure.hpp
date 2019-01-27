@@ -293,7 +293,7 @@ public:
         double virtual_time = std::exp(-ks * err.squaredNorm());
         double v = 20 * virtual_time;
 
-	v = 12; //constant 
+	v = 20; //constant 
         //trajd[0](2) = v * t; // tra_com_pre
         trajd[1](2) = v; // tra_com_dot_pre
 	trajd[0](1) = 0; // 
