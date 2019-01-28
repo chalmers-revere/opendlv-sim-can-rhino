@@ -57,11 +57,11 @@ int32_t main(int32_t argc, char *argv[])
 
 
 
-    FB_state nom_state(20.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(16.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "nom_state initialised." << std::endl;
 
-    FB_state real_state(20.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state real_state(16.0, 0, 0, 0, 0, 0, 0, 0);
 
     Eigen::Vector2d nom_u; // Order: [acc, steer]'
     nom_u << 0.0, 0.0;
@@ -215,8 +215,8 @@ int32_t main(int32_t argc, char *argv[])
                     Eigen::Matrix2d k1, k2;
                     k1 << 2.0, 0.0, 0.0, 2.0;
                     k2 <<  2 * 1.414* sqrt(k1(0)), 0.0, 0.0,  2 * 1.414 *sqrt(k1(3));
-                    //u = k1 * p_err + k2 * p_err_dot + nom_u;
-                    u= L_g_f_output.inverse()*( -k1*p_err -k2*p_err_dot - L_f_f_output + L_g_f_output_nom*nom_u + L_f_f_output_nom);
+                    u = -k1 * p_err - k2 * p_err_dot + nom_u;
+                    //u= L_g_f_output.inverse()*( -k1*p_err -k2*p_err_dot - L_f_f_output + L_g_f_output_nom*nom_u + L_f_f_output_nom);
 
                     // The following line is in the original .m file as an alternative output formula
                     // u= L_g_f_output\( -k1*p_err -k2*p_err_dot - L_f_f_output + L_g_f_output_nom*u_nom + L_f_f_output_nom);

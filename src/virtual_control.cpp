@@ -48,7 +48,7 @@ int32_t main(int32_t argc, char *argv[])
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-    FB_state nom_state(20.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(16.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 
@@ -124,7 +124,7 @@ int32_t main(int32_t argc, char *argv[])
                 //gl.traj_gen(nom_state);
 
                 //20190108:
-		gl.trajd[0](2) = gl.trajd[0](2) + 20.0/FREQ;  
+		gl.trajd[0](2) = gl.trajd[0](2) + 16.0/FREQ;  
 
                 // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);

@@ -222,7 +222,7 @@ public:
         scale_record = 0;
         Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
         tra_com_pre << 0.0, 0.0, 0.0;
-        tra_com_dot_pre << 0.0, 0.0, 12.0; // Pay attention to the value here!
+        tra_com_dot_pre << 0.0, 0.0, 16.0; // Pay attention to the value here!
         tra_com_ddot_pre << 0.0, 0.0, 0.0;
         trajd.push_back(tra_com_pre);
         trajd.push_back(tra_com_dot_pre);
@@ -293,7 +293,7 @@ public:
         double virtual_time = std::exp(-ks * err.squaredNorm());
         double v = 20 * virtual_time;
 
-	v = 20; //constant 
+	v = 16; //constant 
         //trajd[0](2) = v * t; // tra_com_pre
         trajd[1](2) = v; // tra_com_dot_pre
 	trajd[0](1) = 0; // 
