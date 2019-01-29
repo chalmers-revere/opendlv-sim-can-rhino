@@ -200,8 +200,8 @@ std::cout << "tempV2d:  " << tempV2d << std::endl; */
     u.xp_dot =15.8828;   u.yp_dot = 0.6; u.psi_dot = 0.1;
     u.epsi = 2;  u.ey = 2.3;  u.s = 18.1959;  */
 
-    std::cout << "current state in safety_certificate:" << std::endl;
-    u.print(); 
+   // std::cout << "current state in safety_certificate:" << std::endl;
+   // u.print(); 
 
     vector<Coefficient> results_2 = constraint_obstacles_dynamics_complex(u, gl);
 
