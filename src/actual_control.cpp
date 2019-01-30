@@ -31,6 +31,7 @@
 
 int32_t main(int32_t argc, char *argv[])
 {
+    bool flag_nomu(true), flag_nomstate(true), flag_actstate(true); 
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
 
     uint16_t CID = 113, CID2 = 114;
@@ -70,11 +71,12 @@ int32_t main(int32_t argc, char *argv[])
 
     // Global_variables gl;
 
-    cluon::OD4Session od4(CID, [&nom_state, &nom_u, &VERBOSE](cluon::data::Envelope &&env) noexcept {
+    cluon::OD4Session od4(CID, [&nom_state, &nom_u, &VERBOSE, &flag_nomu, &flag_nomstate](cluon::data::Envelope &&env) noexcept {
         if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
             nom_state = FB_state(received.xp_dot(), received.yp_dot(), received.psi_dot(), received.epsi(), received.ey(), received.s(), received.steer(), received.acc());
+            flag_nomstate = false; 
             if (VERBOSE)
             {
                 std::cout << "New nom_state received:" << std::endl;
@@ -84,7 +86,8 @@ int32_t main(int32_t argc, char *argv[])
         else if (env.dataType() == internal::nomU::ID())
         {
             internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
-            nom_u << received.steer(), received.acc();  //notice the order 
+            nom_u << received.steer(), received.acc();  //notice the order
+            flag_nomu = false; 
             if (VERBOSE)
             {
                 std::cout << "New nom_u received:" << std::endl;
@@ -92,7 +95,7 @@ int32_t main(int32_t argc, char *argv[])
             }
         }
     });
-    cluon::OD4Session od4_2(CID2, [&real_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
+    cluon::OD4Session od4_2(CID2, [&real_state, &VERBOSE, &flag_actstate](cluon::data::Envelope &&env) noexcept {
         if (env.dataType() == opendlv::sim::Frame::ID())
         {
             opendlv::sim::Frame received = cluon::extractMessage<opendlv::sim::Frame>(std::move(env));
@@ -118,6 +121,7 @@ int32_t main(int32_t argc, char *argv[])
                 std::cout << "vx:" << real_state.xp_dot << ", y:" << real_state.yp_dot << ", yawRate:" << real_state.psi_dot << std::endl;
             }
         }
+        flag_actstate = false; 
         /*if (env.dataType() == internal::nomState::ID())
         {
             internal::nomState received = cluon::extractMessage<internal::nomState>(std::move(env));
@@ -141,7 +145,7 @@ int32_t main(int32_t argc, char *argv[])
     }
     while (od4.isRunning() && od4_2.isRunning())
     {
-        auto sendMsg{[&od4_2, &nom_state, &real_state, &nom_u, &VERBOSE]() -> bool
+        auto sendMsg{[&od4_2, &nom_state, &real_state, &nom_u, &VERBOSE, &flag_nomu, &flag_nomstate, &flag_actstate]() -> bool
             {
                 Eigen::Vector2d u;
                 if (nom_state.xp_dot <= 1e-1)
@@ -229,9 +233,14 @@ int32_t main(int32_t argc, char *argv[])
                 od4_2.send(gsrMsg);*/
 
                 internal::nomU msgActualu;  //the control variable 
-
-                msgActualu.steer(u(0));
-		msgActualu.acc(u(1));
+                if(flag_nomu |  flag_nomstate | flag_actstate) {
+                    msgActualu.steer(0);
+		    msgActualu.acc(0);
+                }
+                else{
+                    msgActualu.steer(u(0));
+		    msgActualu.acc(u(1));
+                }
                 od4_2.send(msgActualu);
 
                 std::ofstream txt2("/tmp/data_msg_actual_u.txt", std::ios::out | std::ios::app);

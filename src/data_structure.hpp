@@ -261,7 +261,7 @@ public:
 		//curr.pos_x = 90.11;
 		//curr.pos_y = 0.342;
 
-                
+                /*
                 if (i==0){
                 curr.pos_x = 105.53; 
 		curr.pos_y = -1.18394;
@@ -278,7 +278,7 @@ public:
 		curr.radius = 1.86653;
                 }
 
-                /*
+                 
                 if (i==0){
                 curr.pos_x = 50.4264; 
 		curr.pos_y = 0.0943882;
@@ -314,7 +314,7 @@ public:
     void traj_gen(FB_state y, uint32_t FREQ) // update trajd
     { 
         double psi_dot_com = 0;
-        double t = ((double)clock())/CLOCKS_PER_SEC;
+        //double t = ((double)clock())/CLOCKS_PER_SEC;
         double ks;
         if (bound_input)
         {

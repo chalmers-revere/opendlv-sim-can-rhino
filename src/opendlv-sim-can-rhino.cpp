@@ -29,6 +29,8 @@
 
 
 int32_t main(int32_t argc, char **argv) { 
+    int flag_ini_nomc(0); 
+    bool flag_ini_actdy(true); 
     dynamics m_dynamics;    
     int32_t retCode{0};
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
@@ -99,7 +101,7 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
-        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename, &ifNominal](cluon::data::Envelope &&env)
+        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename, &ifNominal, &flag_ini_nomc, &flag_ini_actdy](cluon::data::Envelope &&env)
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
                 if (VERBOSE) std::cout << "Input received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
@@ -109,7 +111,7 @@ int32_t main(int32_t argc, char **argv) {
 		//publish data: 
                 {
                         internal::nomState nomStateMsg;
-                        if (!ifNominal){
+                        if (!ifNominal){                                 
                                 opendlv::sim::KinematicState kinematicMsg;
                                 kinematicMsg.vx((float)m_dynamics.GetLongitudinalVelocity());
                                 kinematicMsg.vy((float)m_dynamics.GetLateralVelocity());
@@ -140,8 +142,11 @@ int32_t main(int32_t argc, char **argv) {
                                 nomStateMsg.s(m_dynamics.state_global.s);
                                 nomStateMsg.steer(m_dynamics.state_global.steering_angle_bar);
                                 nomStateMsg.acc(m_dynamics.state_global.acc_x_bar);
+                                od4->send(nomStateMsg);
                         }
                         else{
+                                if(!flag_ini_actdy){
+                                //flag_ini_nomc = false;
                                 // 2018 Dec. Update: broadcast 8-D states:                                           
                                 nomStateMsg.xp_dot(m_dynamics.GetLongitudinalVelocity());
                                 nomStateMsg.yp_dot(m_dynamics.GetLateralVelocity());
@@ -156,6 +161,8 @@ int32_t main(int32_t argc, char **argv) {
                                 if (VERBOSE) std::cout << "Current 8-D states sent: " 	
                                    << "[" << nomStateMsg.xp_dot() << ", " << nomStateMsg.yp_dot() << ", " << nomStateMsg.psi_dot() << ", " << nomStateMsg.epsi() << ", " \
                                    << nomStateMsg.ey() << ", " << nomStateMsg.s() << ", " << nomStateMsg.steer() << ", " << nomStateMsg.acc() << "]" << std::endl;
+                                flag_ini_nomc ++;  if (flag_ini_nomc == 127) flag_ini_nomc = 10;   
+                                }                              
                         }
 
                         // Data saving into txt file (if "save_file" indicated)
@@ -181,7 +188,7 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
-        if (od4->isRunning())
+        if (od4->isRunning()) 
         {
             if (ifNominal)
             {
@@ -197,18 +204,23 @@ int32_t main(int32_t argc, char **argv) {
             }
         }
 
-        auto Input_Override_States{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+        auto Input_Override_States{[&m_dynamics, &VERBOSE, &flag_ini_actdy, &flag_ini_nomc, &ifNominal](cluon::data::Envelope &&env)
             {
                 internal::nomState ext_state = cluon::extractMessage<internal::nomState>(std::move(env));
-                if (VERBOSE) std::cout << "External overriding states received: " 
-                    << "[" << ext_state.xp_dot() << ", " << ext_state.yp_dot() << ", " << ext_state.psi_dot() << ", " << ext_state.epsi() << ", " \
-                    << ext_state.ey() << ", " << ext_state.s() << ", " << ext_state.steer() << ", " << ext_state.acc() << "]" << std::endl;
-                m_dynamics.state_global.epsi = ext_state.epsi();
-                m_dynamics.state_global.ey = ext_state.ey();
-                m_dynamics.state_global.s = ext_state.s();
-                m_dynamics.state_global.v_body[0] = ext_state.xp_dot();
-                m_dynamics.state_global.v_body[1] = ext_state.yp_dot();
-                m_dynamics.state_global.omega_body[2] = ext_state.psi_dot(); // yaw rate
+                
+                //std::cout << "testing flag_ini_nomc " <<   flag_ini_nomc << std::endl;
+                if ( (( flag_ini_nomc <=2 ) | flag_ini_actdy) & ifNominal)  {
+                        if (VERBOSE) std::cout << "External overriding states received: " 
+                            << "[" << ext_state.xp_dot() << ", " << ext_state.yp_dot() << ", " << ext_state.psi_dot() << ", " << ext_state.epsi() << ", " \
+                            << ext_state.ey() << ", " << ext_state.s() << ", " << ext_state.steer() << ", " << ext_state.acc() << "]" << std::endl;
+                        m_dynamics.state_global.epsi = ext_state.epsi();
+                        m_dynamics.state_global.ey = ext_state.ey();
+                        m_dynamics.state_global.s = ext_state.s();
+                        m_dynamics.state_global.v_body[0] = ext_state.xp_dot();
+                        m_dynamics.state_global.v_body[1] = ext_state.yp_dot();
+                        m_dynamics.state_global.omega_body[2] = ext_state.psi_dot(); // yaw rate
+                        if (ifNominal) flag_ini_actdy = false; //received actual state data
+                }
             }
         };
         /*message internal.nomState [id = 3002] {
@@ -222,9 +234,12 @@ int32_t main(int32_t argc, char **argv) {
   double acc [id = 8];
 }*/
 
-        if (od4_2->isRunning())
+        //if ((od4_2->isRunning()) & ( (flag_ini_nomc <=3) ) ) //at least 2 frames of nominal control data are received
+        if ((od4_2->isRunning()))   
         {
+            //if ( flag_ini_nomc <=3)
             od4_2->dataTrigger(internal::nomState::ID(), Input_Override_States);
+            //std::cout << "testing od4_2 " <<  std::endl;
         }
 
         //time triggered dynamics: 
@@ -310,7 +325,7 @@ int32_t main(int32_t argc, char **argv) {
         }; // end of Output definition
 
         using namespace std::literals::chrono_literals;
-        while (od4->isRunning()) {
+        while (od4->isRunning() ) {
             //od4->timeTrigger(FREQ, Output);
             od4->timeTrigger(1000, solver_dynamics);
 //            std::this_thread::sleep_for(0.1s); // Commented as it is no longer simply data driven

@@ -30,6 +30,7 @@
 
 int32_t main(int32_t argc, char *argv[])
 {
+    int  flag_ini = 0;    //initialization flag, 
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
 
     uint16_t CID = 113;
@@ -81,7 +82,7 @@ int32_t main(int32_t argc, char *argv[])
         std::cout << "Obstacles generated." << std::endl;
     }
 
-    cluon::OD4Session od4(CID, [&nom_state, &VERBOSE](cluon::data::Envelope &&env) noexcept {
+    cluon::OD4Session od4(CID, [&nom_state, &VERBOSE, &flag_ini, &gl](cluon::data::Envelope &&env) noexcept {
         std::cout << "Received message:" << env.dataType() << std::endl;
 
         if (env.dataType() == internal::nomState::ID())
@@ -97,12 +98,21 @@ int32_t main(int32_t argc, char *argv[])
             nom_state.s = received.s();
             nom_state.steer = received.steer();
             nom_state.acc = received.acc();
+            //std::cout << "testing flag_ini " <<   flag_ini  << std::endl;
+            if(flag_ini == 0) {
+            //initialization the reference trajectory: 
+               gl.trajd[2] << 0, 0, 0;  //tra_com_ddot
+               gl.trajd[1] << 0, 0, gl.v_ref;  //tra_com_dot
+               gl.trajd[0] << 0, 0, nom_state.s;   //tra_com
+            }
 
             if (VERBOSE)
             {
                std::cout << "New nom_state received:" << std::endl;
-               nom_state.print(); 
+               nom_state.print();  
+               std::cout << "flag_ini: " << flag_ini << std::endl;
             }
+            flag_ini++; if (flag_ini == 127) flag_ini = 10;
         }
     });
 
@@ -111,9 +121,9 @@ int32_t main(int32_t argc, char *argv[])
         std::cerr << "ERROR: No OD4 running!!!" << std::endl;
         return -1;
     }
-    while (od4.isRunning())
+    while (od4.isRunning()) //should run after initialization 
     {
-        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE, &FREQ]() -> bool
+        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE, &FREQ, &flag_ini]() -> bool
             {
                 // update position of obstacles
                 gl.ob_traj(false); 
@@ -136,13 +146,21 @@ int32_t main(int32_t argc, char *argv[])
                 gl.nosolution = !(correct.hasSolution);
 
                 internal::nomU msgNomU;
+
+                if (flag_ini >= 1){
                 //  notice the order:                 
                 msgNomU.steer(correct.x(0));
 		msgNomU.acc(correct.x(1));
+                }
+                else{
+                msgNomU.steer(0);
+		msgNomU.acc(0);
+                }
 
                // msgNomU.steer(0);
 	       // msgNomU.acc(1);
                 od4.send(msgNomU);
+
 		
                 if (VERBOSE)
                 {	            
