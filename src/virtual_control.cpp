@@ -100,10 +100,8 @@ int32_t main(int32_t argc, char *argv[])
 
             if (VERBOSE)
             {
-
-               //20190103, where is the nom_state? cannot see it. 
-               // std::cout << "New nom_state received:" << std::endl;
-               // nom_state.print(); 
+               std::cout << "New nom_state received:" << std::endl;
+               nom_state.print(); 
             }
         }
     });
@@ -121,10 +119,10 @@ int32_t main(int32_t argc, char *argv[])
                 gl.ob_traj(false); 
 
                 // update trajd
-                //gl.traj_gen(nom_state);
+                gl.traj_gen(nom_state, FREQ);
 
                 //20190108:
-		gl.trajd[0](2) = gl.trajd[0](2) + 16.0/FREQ;  
+		//gl.trajd[0](2) = gl.trajd[0](2) + 16.0/FREQ;  
 
                 // run the solver
                 Output_safety correct = safety_certificate_complex(nom_state, gl);
@@ -161,6 +159,14 @@ int32_t main(int32_t argc, char *argv[])
                     txt2.close();
                 }
                 else std::cerr << "WARNING: Unable to save data into the file <data_msg_nom_u.txt>." << std::endl;
+
+                std::ofstream txt3("/tmp/data_ref_traj.txt", std::ios::out | std::ios::app);
+                if (txt3.is_open())
+                {
+                    txt3 << gl.trajd[0](0) << '\t' << gl.trajd[0](1)  << '\t' << gl.trajd[0](2)   << '\t' << gl.trajd[1](0) << '\t' << gl.trajd[1](1)  << '\t' << gl.trajd[1](2) << '\n';
+                    txt3.close();
+                }
+                else std::cerr << "WARNING: Unable to save data into the file <data_ref_traj.txt>." << std::endl;
 
                 std::ofstream txt("/tmp/data_traj_ob.txt", std::ios::out | std::ios::app );
                 if (txt.is_open())

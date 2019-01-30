@@ -3,7 +3,8 @@ load  data_nominal_states.txt;
 load data_msg_nom_u.txt;
 load  data_model_state.txt;
 load data_msg_actual_u.txt;
-
+load data_ref_traj.txt;
+ 
 
 u_ctrl = data_msg_nom_u(:,2:3); %nominal 
 u_actual = data_msg_actual_u(:,2:3);  %actual 
@@ -155,24 +156,24 @@ end
  
 figure(2);   
 subplot(4,1,1);
-plot(t,P_nom(:,1),'-.',t_actual,P_sens(:,1)),grid;
+plot(t, data_ref_traj(:,3), '--', t,P_nom(:,1),'-.',t_actual,P_sens(:,1)),grid;
 ylabel('X(m)');
 title('POSITION:SENSED VS COMMAND');
  
 
 subplot(4,1,2);
-plot(t,P_nom(:,2),'-.',t_actual,P_sens(:,2)),grid;
+plot(t, data_ref_traj(:,2), '--',t,P_nom(:,2),'-.',t_actual,P_sens(:,2)),grid;
 ylabel('Y(m)');
  xlabel('time(s)');
  
  subplot(4,1,3);
-plot(  t, y1_nom(:,1), '--',  t_actual,y1_actual(:,1) ),grid;
+plot(t, data_ref_traj(:,6), '--',  t, y1_nom(:,1), '-.',  t_actual,y1_actual(:,1) ),grid;
 legend('reference','nominal', 'actual');
 ylabel('v(m/s)');
  xlabel('time(s)');
  
  subplot(4,1,4);
-plot( t, y1_nom(:,4)/pi*180, '--',  t_actual,y1_actual(:,4)/pi*180 ),grid;
+plot( t, y1_nom(:,4)/pi*180, '-.',  t_actual,y1_actual(:,4)/pi*180 ),grid;
 ylabel('\psi(degree)');
  xlabel('time(s)');
  

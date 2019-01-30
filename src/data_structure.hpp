@@ -188,12 +188,13 @@ public:
     int scale_tracking{0};
     Eigen::Vector2d u_tracking_global{};
     int scale_record{0};
+    double v_ref;   //reference speed
 
     std::vector<Eigen::Vector3d> trajd{}; // this contains all the 3 variables in the following line
     //Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
 
     bool brake_flag{false}, brake_flag_pre{false};
-    bool nosolution{false};
+    bool nosolution{false}; bool bound_input{false}; 
 
     // the following three are initialised by constraint_obstacles.m
     std::vector<Obstacle> traj_ob{};
@@ -202,7 +203,7 @@ public:
     // vector<double> radius_pre;
 
     std::vector<bool> beta_2{};
-    double dt{0.0};
+    double dt{0.001};
 
     bool isVerbose{false};
 
@@ -220,9 +221,10 @@ public:
         scale_tracking = 0;
         u_tracking_global << 0.0, 0.0;
         scale_record = 0;
+        v_ref = 16.0;
         Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
         tra_com_pre << 0.0, 0.0, 0.0;
-        tra_com_dot_pre << 0.0, 0.0, 16.0; // Pay attention to the value here!
+        tra_com_dot_pre << 0.0, 0.0, v_ref; // Pay attention to the value here!
         tra_com_ddot_pre << 0.0, 0.0, 0.0;
         trajd.push_back(tra_com_pre);
         trajd.push_back(tra_com_dot_pre);
@@ -230,6 +232,7 @@ public:
         brake_flag = false;
         brake_flag_pre = false;
         nosolution = false;
+        bound_input = false; 
         dt = 0.001;
         for (int i = 0; i < 50; ++i)
         {
@@ -257,6 +260,40 @@ public:
 		//curr.radius = 2.1; 
 		//curr.pos_x = 90.11;
 		//curr.pos_y = 0.342;
+
+                
+                if (i==0){
+                curr.pos_x = 105.53; 
+		curr.pos_y = -1.18394;
+		curr.radius = 1.53126;
+                }
+                if (i==1){
+                curr.pos_x = 55.8426; 
+		curr.pos_y = -0.428955;
+		curr.radius = 1.57196;
+                }
+                if (i==2){
+                curr.pos_x = 87.2198; 
+		curr.pos_y = 0.64755;
+		curr.radius = 1.86653;
+                }
+
+                /*
+                if (i==0){
+                curr.pos_x = 50.4264; 
+		curr.pos_y = 0.0943882;
+		curr.radius = 1.79635;
+                }
+                if (i==1){
+                curr.pos_x = 94.0085; 
+		curr.pos_y = 0.194737;
+		curr.radius = 1.94004;
+                }
+                if (i==2){
+                curr.pos_x = 141.294; 
+		curr.pos_y = -1.0001;
+		curr.radius = 1.83648;
+                }*/
             }
             while (curr.isConf(traj_ob));
             traj_ob.push_back(curr);
@@ -274,14 +311,14 @@ public:
         }
     }
 
-    void traj_gen(FB_state y) // update trajd
-    {
+    void traj_gen(FB_state y, uint32_t FREQ) // update trajd
+    { 
+        double psi_dot_com = 0;
         double t = ((double)clock())/CLOCKS_PER_SEC;
         double ks;
-        if (nosolution)
+        if (bound_input)
         {
-            ks = 0.1;
-            nosolution = false;
+            ks = 0.001; //this parameter should be tunned carefully. 
         }
         else
         {
@@ -290,14 +327,19 @@ public:
         Eigen::Vector3d err;
         err << y.epsi, y.ey, y.s;
         err -= trajd[0]; // tra_com_pre
+        Eigen::Vector3d L_f_output;
+        L_f_output <<  y.psi_dot - psi_dot_com, y.yp_dot * cos(y.epsi) + y.xp_dot * sin(y.epsi), y.xp_dot * cos(y.epsi) - y.yp_dot * sin(y.epsi);
+        Eigen::Vector3d err_dot = 1*(L_f_output-trajd[1]);  //err_dot = 1*(L_f_output-tra_com_dot_pre);
         double virtual_time = std::exp(-ks * err.squaredNorm());
-        double v = 20 * virtual_time;
+        double virtual_time_dot = -ks*virtual_time*2*err.adjoint() * err_dot; 
+        double v = v_ref * virtual_time;
+        double v_dot =  v_ref*virtual_time_dot;
+ 
+        //trajd[1](2) = v_ref; // constant
 
-	v = 16; //constant 
-        //trajd[0](2) = v * t; // tra_com_pre
-        trajd[1](2) = v; // tra_com_dot_pre
-	trajd[0](1) = 0; // 
-        trajd[1](1) = 0; // tra_com_dot_pre
+        trajd[2] << 0, 0, v_dot;  //tra_com_ddot
+        trajd[1] << 0, 0, v;  //tra_com_dot
+        trajd[0] = trajd[0] + trajd[1]/FREQ;   //tra_com
     }
 };
 

@@ -545,6 +545,14 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
     out.value_min = value_min;
     out.coef = results_2[0];
 
+
+    //modify the speed of reference trajectory to avoid the feedback linearization controll unstable: 
+    if ((abs(out.x(0))>= 0.9 ) || (abs(out.x(1))>= 1.8 ))
+        gl.bound_input = true;
+    else
+        gl.bound_input = false; 
+
+
     // Data saving into txt file
     // each row contains the following data, seperated by tab: 
     // time tra_com(1) tra_com(2)  tra_com_dot(1)  tra_com_dot(2)  tra_com_ddot(1) tra_com_ddot(2)
