@@ -189,6 +189,7 @@ public:
     Eigen::Vector2d u_tracking_global{};
     int scale_record{0};
     double v_ref;   //reference speed
+    float t_nom{0.0}; //time
 
     std::vector<Eigen::Vector3d> trajd{}; // this contains all the 3 variables in the following line
     //Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
@@ -222,6 +223,7 @@ public:
         u_tracking_global << 0.0, 0.0;
         scale_record = 0;
         v_ref = 16.0;
+        t_nom = 0.0;
         Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
         tra_com_pre << 0.0, 0.0, 0.0;
         tra_com_dot_pre << 0.0, 0.0, v_ref; // Pay attention to the value here!
@@ -250,7 +252,7 @@ public:
             {
                 curr.radius = 1.5 + 0.5 * (double)rand() / RAND_MAX;
                 curr.pos_x = 50 + 110 * (double)rand() / RAND_MAX;
-                curr.pos_y = -1.2 + 2.4 * (double)rand() / RAND_MAX;
+                curr.pos_y = -1.2 + 2.4 * (double)rand() / RAND_MAX;  
 
 		//tune 20190110:
 		/*curr.radius = 2.1; 
@@ -294,6 +296,23 @@ public:
 		curr.pos_y = -1.0001;
 		curr.radius = 1.83648;
                 }*/
+
+                //this set of obstacles may incude different results, guess may induced by the delays in the time trigger: 
+                /*if (i==0){
+                curr.pos_x = 100.452; 
+		curr.pos_y = 1.0777;
+		curr.radius = 1.95393;
+                }
+                if (i==1){
+                curr.pos_x = 66.5138; 
+		curr.pos_y = 0.831317;
+		curr.radius = 1.69178;
+                }
+                if (i==2){
+                curr.pos_x = 124.672; 
+		curr.pos_y = -1.11918;
+		curr.radius = 1.97843;
+                }*/
             }
             while (curr.isConf(traj_ob));
             traj_ob.push_back(curr);
@@ -304,8 +323,9 @@ public:
     {
         for (uint16_t i = 0; i < no_ob; i++)
         {
-            double v = isDynamic ? std::sqrt(dt) * 2 : 0.0;
-
+            double v = isDynamic ? std::sqrt(t_nom) * 2 : 0.0;
+            v = isDynamic ? (rand() / RAND_MAX  + 3) : 0.0;
+            t_nom = t_nom + dt; 
             traj_ob[i].pos_x += v * dt;
             traj_ob[i].vel_x = v;
         }

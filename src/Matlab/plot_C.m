@@ -236,4 +236,37 @@ ylabel('  a_x(m/s^2)');
 ylabel('  steer(rad)');
  xlabel('time(s)');
  
+ load data_safety_certificate.txt;
+ 
+ An_sidepos = data_safety_certificate(:,1:2);
+ bn_sidepos= data_safety_certificate(:,3); 
+ 
+ %notice the order: 
+ test_cons = An_sidepos(:, 1).*u_ctrl(:,2) + An_sidepos(:, 2).*u_ctrl(:,1) - bn_sidepos; 
+ 
+ figure(8);
+   subplot(5,1,1);
+  plot(t, data_safety_certificate(:,1));  grid;  title('A1, side'); 
+    subplot(5,1,2);
+  plot(t, data_safety_certificate(:,2));  grid;  title('A2, side'); 
+    subplot(5,1,3);
+  plot(t, data_safety_certificate(:,3));  grid;  title('b, side'); 
+  
+      subplot(5,1,4);
+  plot(t, test_cons);  grid;  title('test_cons, pos side'); 
+  
+
+  
+  subplot(5,1,5);
+  plot(t, data_safety_certificate(:,4));  grid;  title('cbf, side'); 
+  
+figure(9);
+  plot(t, data_safety_certificate(:, 9));  grid;  title('min_value, qp'); 
+  
+% % ylabel('  a_x(m/s^2)');
+%  subplot(2,1,2);
+%   plot(t, data_safety_certificate(:,8));  grid;  
+% % ylabel('  steer(rad)');
+ xlabel('time(s)');
+ 
  

@@ -150,7 +150,7 @@ int32_t main(int32_t argc, char *argv[])
                 Eigen::Vector2d u;
                 if (nom_state.xp_dot <= 1e-1)
                 {
-                    u << 0, 0;
+                    u << 0, -5;
                     if (VERBOSE)
                     {
                         std::cerr << "WARNING: nom_state.xp_dot too small." << std::endl;
@@ -158,7 +158,7 @@ int32_t main(int32_t argc, char *argv[])
                 }
                 else if (real_state.xp_dot <= 1e-1)
                 {
-                    u << 0, 0;
+                    u << 0, -5;
                     if (VERBOSE)
                     {
                         std::cerr << "WARNING: real_state.xp_dot too small." << std::endl;

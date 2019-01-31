@@ -114,7 +114,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     else
     {
         A_n_side_pos = -L_g_h_sid_pos;
-        b_n_side_pos = L_f_h_sid_pos + 0.5 * h_sid_pos;
+        b_n_side_pos = L_f_h_sid_pos + 0.4 * h_sid_pos;  //small = rigid
     }
     
     if ((h_sid_neg > 0) && (temp_d > 0))
@@ -125,7 +125,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     else
     {
         A_n_side_neg = -L_g_h_sid_neg;
-        b_n_side_neg = L_f_h_sid_neg + 0.5 * h_sid_neg;
+        b_n_side_neg = L_f_h_sid_neg + 0.4 * h_sid_neg;
     }
     if (abs(ey) >= 3.7) gl.dead = true;
     // line 171 so far

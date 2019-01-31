@@ -305,6 +305,10 @@ Eigen::MatrixXi slack_mult_test(2, no_ob_active);
         vector<Eigen::Vector2d> A_n_and{}, A_n_or{};
         vector<double> b_n_and{}, b_n_or{};
 
+        A_n_and.clear();
+        b_n_and.clear();
+        A_n_or.clear();
+        b_n_or.clear();
         A_n_and.push_back(results_2[0].A_n_side_pos);
         A_n_and.push_back(results_2[0].A_n_side_neg);
         b_n_and.push_back(results_2[0].b_n_side_pos);
@@ -477,11 +481,28 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
                 if (gl.isVerbose){
                         std::cout << "rtA_new " << 2*i  << ": " << rtA_new[2 * i]  <<  std::endl;
 		        std::cout << "rtA_new " << 2 * i + 1  << ": " << rtA_new[2 * i + 1]  <<  std::endl;
+
+                        std::ofstream txt_qp("/tmp/qp_value.txt", std::ios::out | std::ios::app);
+                                if (txt_qp.is_open()){
+                                    txt_qp  <<  ((double)clock())/CLOCKS_PER_SEC << '\n'
+                                            << "rtA_new " << 2*i  << ": " << rtA_new[2 * i]  <<  '\n'
+                                            << "rtA_new " << 2 * i + 1  << ": " << rtA_new[2 * i + 1]  << '\n'; 
+                                txt_qp.close();
+                                }
                 }
             }
             for (int i = 0; i < b_n_and.size(); i++){
                 rtb_new[i] = (abs(b_n_and[i]) < 1e-4) ? 0 : b_n_and[i];
-                if (gl.isVerbose)  std::cout << "rtb_new " << i  << ": " << rtb_new[i] <<  std::endl;
+                if (gl.isVerbose) {
+                     std::cout << "rtb_new " << i  << ": " << rtb_new[i] <<  std::endl;
+
+                         std::ofstream txt_qp("/tmp/qp_value.txt", std::ios::out | std::ios::app);
+                                if (txt_qp.is_open()){
+                                    txt_qp  <<  ((double)clock())/CLOCKS_PER_SEC << '\n'
+                                            << "rtb_new " << i  << ": " << rtb_new[i] << '\n'; 
+                                txt_qp.close();
+                                }
+                 }
             }
 
             SQProblem qp2(2, A_n_and.size());  //the second variable represents the number of the constraints 
@@ -496,8 +517,22 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
                     std::cout << "f2:  " <<f2[0] << ", " << f2[1] << std::endl;
                     std::cout << "A_n_and.size():  " << A_n_and.size() << std::endl;
                     printf( "\n qp solver: control = [ %f, %f ];  objVal = %f\n\n", rtOut[0], rtOut[1], qp2.getObjVal() );  
-                    std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;    
+                    std::cout << " qp2 is solvable? " << qp2.isSolved() << std::endl;  
+
+                    std::ofstream txt_qp("/tmp/qp_value.txt", std::ios::out | std::ios::app);
+                    if (txt_qp.is_open()){
+                    txt_qp  <<  ((double)clock())/CLOCKS_PER_SEC << '\n'
+                            << "rtlb:  " <<rtlb[0] << ", " << rtlb[1] << '\n'
+                            << "rtub:  " <<rtub[0] << ", " << rtub[1] << '\n'
+                             << "f2:  " <<f2[0] << ", " << f2[1] << '\n'
+                            << "A_n_and.size():  " << A_n_and.size() << '\n'
+                             << " qp2 is solvable? " << qp2.isSolved() << '\n'; 
+                    txt_qp.close();
+                    }  
             }  
+
+
+
                      
 
             if (FVAL < value_min)
@@ -560,19 +595,19 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
     std::ofstream txt("/tmp/data_safety_certificate.txt", std::ios::out | std::ios::app);
     if (txt.is_open())
     {
-        txt << ((double)clock())/CLOCKS_PER_SEC << '\t' 
-            << tra_com(0) << '\t' << tra_com(1) << '\t' 
-            << tra_com_dot(0) << '\t' << tra_com_dot(1) << '\t' 
-            << tra_com_ddot(0) << '\t' << tra_com_ddot(1) << '\n';
+        txt  << '\t' 
+            << results_2[0].A_n_side_pos(0) <<'\t' << results_2[0].A_n_side_pos(1) << '\t' << results_2[0].b_n_side_pos << '\t' << results_2[0].h_sid_pos << '\t' 
+            << results_2[0].A_n_side_neg(0) <<'\t' << results_2[0].A_n_side_neg(1) << '\t' << results_2[0].b_n_side_neg << '\t' << results_2[0].h_sid_neg << '\t' 
+            << value_min << '\n';
         txt.close();
     }
     else std::cerr << "WARNING: Unable to save data into the file <data_safety_certificate.txt>." << std::endl;
 
     //tunning, only use the nominal control: 
-    if (s> 100){
+    //if (s> 100){
      //out.x(0) = u_nom(0);
      //out.x(1) = u_nom(1);
-        }
+      //  }
  
 
     return out;
