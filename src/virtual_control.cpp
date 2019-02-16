@@ -126,7 +126,7 @@ int32_t main(int32_t argc, char *argv[])
         auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE, &FREQ, &flag_ini]() -> bool
             {
                 // update position of obstacles
-                gl.ob_traj(true); 
+                gl.ob_traj(false); 
 
                 // update trajd
                 gl.traj_gen(nom_state, FREQ);
