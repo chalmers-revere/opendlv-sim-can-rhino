@@ -55,6 +55,8 @@ typedef struct
 	double steering_angle;
 
         double acc_x;   //acc in x_direction
+
+        double speed_x; //speed in x_direction, the input can be set to this mode 
 } input_vehicle; // Utilised for receiving messages as input
 
 

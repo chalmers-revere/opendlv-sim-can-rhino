@@ -224,6 +224,10 @@ int32_t main(int32_t argc, char *argv[])
 
                     // The following line is in the original .m file as an alternative output formula
                     // u= L_g_f_output\( -k1*p_err -k2*p_err_dot - L_f_f_output + L_g_f_output_nom*u_nom + L_f_f_output_nom);
+                    
+                    //20190216: if the input to the actual system is speed: 
+                    u(1) = -0.5 * p_err(1)  + nom_state.xp_dot;  
+                    //u(1) = 10;  u(0) = 0; //tune
                 }
                 /*opendlv::proxy::PedalPositionRequest pprMsg;
                 opendlv::proxy::GroundSteeringRequest gsrMsg;
@@ -236,10 +240,12 @@ int32_t main(int32_t argc, char *argv[])
                 if(flag_nomu |  flag_nomstate | flag_actstate) {
                     msgActualu.steer(0);
 		    msgActualu.acc(0);
+                    msgActualu.speed(16); //20190216: if the input to the actual system is speed:
                 }
                 else{
                     msgActualu.steer(u(0));
 		    msgActualu.acc(u(1));
+                    msgActualu.speed(u(1));  //20190216: if the input to the actual system is speed:
                 }
                 od4_2.send(msgActualu);
 

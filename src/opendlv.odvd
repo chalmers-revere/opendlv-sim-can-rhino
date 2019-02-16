@@ -381,6 +381,7 @@ message opendlv.logic.cognition.GroundSpeedLimit [id = 1192] {
 message internal.nomU [id = 3001] {
   double acc [id = 1];
   double steer [id = 2];
+  double speed [id = 3]; 
 }
 
 message internal.nomState [id = 3002] {

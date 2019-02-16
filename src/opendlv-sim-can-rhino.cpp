@@ -108,6 +108,8 @@ int32_t main(int32_t argc, char **argv) {
                 m_dynamics.input_global.acc_x = received.acc();
                 m_dynamics.input_global.steering_angle = received.steer();
 
+                if (!ifNominal) m_dynamics.input_global.speed_x = received.speed();  //20190216, if the input is speed 
+
 		//publish data: 
                 {
                         internal::nomState nomStateMsg;
@@ -339,7 +341,7 @@ int32_t main(int32_t argc, char **argv) {
 dynamics::dynamics():
 state_global({{16,0,0},{0,0,0},{0,0},0,0,0, 0, 0, 0, 0, 0}),
 diff_global({{0,0,0},{0,0,0},{0,0},0,0,0,0,0,0, 0, 0}),
-input_global({0,0,0,0}),
+input_global({0,0,0,0,16}),
 PI (3.14159265),
 cp ( 20),  //parameter of cornering stiffness
 mu ( 0.9),   //friction coefficient
@@ -842,6 +844,11 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
         double steering_angle_bar = state.steering_angle_bar;
         double acc_x_bar = state. acc_x_bar;
 
+        if(!ifnominal){
+            //if the input is the x-speed: 
+            xp_dot = input.speed_x; 
+            state.v_body[0]= xp_dot;
+        }
 
         if (state.v_body[0]> 1e-1)
         {
@@ -880,6 +887,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
                 out.ey_dot += 2*distur[4];
                 out.s_dot += 2*distur[5];
                // std::cout << "disturbance is added!"<< std::endl;
+
             }
         }
         else
@@ -893,6 +901,11 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
             out.s_dot =  0 ;     // dot s
             out.steering_angle_bar_dot = 0 ;
             out.acc_x_bar_dot = 0;
+        }
+
+        if(!ifnominal){
+            //if the input is the x-speed: 
+            out.vb_dot[0] = 0; 
         }
 
 
