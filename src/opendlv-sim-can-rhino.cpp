@@ -258,11 +258,33 @@ int32_t main(int32_t argc, char **argv) {
             }
         }; // end of Reading_GPS
 
-        auto Reading_Velocity{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+        auto Reading_AngularVelocity{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
             {
-                //TODO: start from here
+                opendlv::proxy::AngularVelocityReading reading_ang_vel = cluon::extractMessage<opendlv::proxy::AngularVelocityReading>(std::move(env));
+                m_dynamics.state_global.omega_body[0] = reading_ang_vel.angularVelocityX();
+                m_dynamics.state_global.omega_body[1] = reading_ang_vel.angularVelocityY();
+                m_dynamics.state_global.omega_body[2] = reading_ang_vel.angularVelocityZ();
+                if (VERBOSE)
+                {
+                    std::cout << "Received angular velocity reading: [" 
+                        << reading_ang_vel.angularVelocityX() << ", " 
+                        << reading_ang_vel.angularVelocityY() << ", " 
+                        << reading_ang_vel.angularVelocityZ() << "]." << std::endl;
+                }
             }
-        }; // end of Reading_Velocity
+        }; // end of Reading_AngularVelocity
+
+        auto Reading_GroundSpeed{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+            {
+                opendlv::proxy::GroundSpeedReading reading_gs = cluon::extractMessage<opendlv::proxy::GroundSpeedReading>(std::move(env));
+                // TODO: verify the following line (regarding frames and potential need of conversion
+                m_dynamics.state_global.v_body[0] = reading_gs.groundSpeed();
+                if (VERBOSE)
+                {
+                    std::cout << "Received ground speed reading: " << reading_gs.groundSpeed() << std::endl;
+                }
+            }
+        }; // end of Reading_GroundSpeed
 
         //if ((od4_2->isRunning()) & ( (flag_ini_nomc <=3) ) ) //at least 2 frames of nominal control data are received
         if ((od4_2->isRunning()))   
@@ -270,7 +292,8 @@ int32_t main(int32_t argc, char **argv) {
             //if ( flag_ini_nomc <=3)
             od4_2->dataTrigger(internal::nomState::ID(), Input_Override_States);
             od4_2->dataTrigger(opendlv::proxy::GeodeticWgs84Reading::ID(), Reading_GPS);
-            //od4_2->dataTrigger(???::ID(), Reading_Velocity);
+            od4_2->dataTrigger(opendlv::proxy::AngularVelocityReading::ID(), Reading_AngularVelocity);
+            od4_2->dataTrigger(opendlv::proxy::GroundSpeedReading::ID(), Reading_GroundSpeed);
             //std::cout << "testing od4_2 " <<  std::endl;
         }
 
