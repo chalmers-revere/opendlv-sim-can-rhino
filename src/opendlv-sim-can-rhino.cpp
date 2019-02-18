@@ -18,6 +18,9 @@
 #include "cluon-complete.hpp"
 #include "opendlv-standard-message-set.hpp"
 
+// GPS converter
+#include "WGS84toCartesian.hpp"
+
 #include <cstdint>
 #include <iostream>
 #include <fstream>
@@ -29,8 +32,10 @@
 
 
 int32_t main(int32_t argc, char **argv) { 
-    int flag_ini_nomc(0); 
-    bool flag_ini_actdy(true); 
+    int flag_ini_nomc{0}; 
+    bool flag_ini_actdy{true}; 
+    bool flag_ini_position{false};
+
     dynamics m_dynamics;    
     int32_t retCode{0};
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
@@ -48,7 +53,7 @@ int32_t main(int32_t argc, char **argv) {
         auto filename{ifSave ? commandlineArguments["save_file"] : ""};
 
         const bool ifNominal{commandlineArguments.count("nominal") != 0};
-        m_dynamics.ifnominal = ifNominal; 
+        m_dynamics.ifNominal = ifNominal; 
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
 //        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
@@ -76,7 +81,7 @@ int32_t main(int32_t argc, char **argv) {
                     if (VERBOSE) std::cout << "Break pedal request received: " << ppr.position() << std::endl;
                 }
             }
-        };
+        }; // end of Input_Pedal
 
         auto Input_Steer{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
             {
@@ -99,9 +104,9 @@ int32_t main(int32_t argc, char **argv) {
                     m_dynamics.SetRoadWheelAngle(angle);
                 }
             }
-        };
+        }; // end of Input_Steer
 
-        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &VERBOSE, &ifSave, &filename, &ifNominal, &flag_ini_nomc, &flag_ini_actdy](cluon::data::Envelope &&env)
+        auto Input_NomU{[od4, &m_dynamics, &VERBOSE, &ifSave, &filename, &ifNominal, &flag_ini_nomc, &flag_ini_actdy](cluon::data::Envelope &&env)
             {
                 internal::nomU received = cluon::extractMessage<internal::nomU>(std::move(env));
                 if (VERBOSE) std::cout << "Input received: acc=" << received.acc() << ", steer= " << received.steer() << std::endl;
@@ -188,7 +193,7 @@ int32_t main(int32_t argc, char **argv) {
                 
                 }
             }
-        };
+        }; // end of Input_NomU
 
         if (od4->isRunning()) 
         {
@@ -225,22 +230,47 @@ int32_t main(int32_t argc, char **argv) {
                 }
             }
         };
-        /*message internal.nomState [id = 3002] {
-  double xp_dot [id = 1];
-  double yp_dot [id = 2];
-  double psi_dot [id =3 ];
-  double epsi [id = 4];
-  double ey [id = 5];
-  double s [id = 6];
-  double steer [id = 7];
-  double acc [id = 8];
-}*/
+
+        auto Reading_GPS{[&m_dynamics, &VERBOSE, &flag_ini_position](cluon::data::Envelope &&env)
+            {
+                opendlv::proxy::GeodeticWgs84Reading reading_wgs84 = cluon::extractMessage<opendlv::proxy::GeodeticWgs84Reading>(std::move(env));
+                if (!flag_ini_position) // first reading of GPS i.e. no ref point set yet
+                {
+                    m_dynamics.init_latitude = reading_wgs84.latitude();
+                    m_dynamics.init_longitude = reading_wgs84.longitude();
+                    flag_ini_position = true;
+                    if (VERBOSE) 
+                        std::cout << "Init position ref_point set." << std::endl;
+                }
+                else
+                {
+                    std::array<double, 2> ref_point{m_dynamics.init_latitude, m_dynamics.init_longitude};
+                    std::array<double, 2> pos_wgs84{reading_wgs84.latitude(), reading_wgs84.longitude()};
+                    std::array<double, 2> pos_cartesian{wgs84::toCartesian(ref_point, pos_wgs84)};
+                    m_dynamics.state_global.s = pos_cartesian[0];
+                    m_dynamics.state_global.ey = pos_cartesian[1];
+                    if (VERBOSE)
+                    {
+                        std::cout << "Received GPS reading, WGS84: [" << pos_wgs84[0] << ", " << pos_wgs84[1] << "], ";
+                        std::cout << "Cartesian: [" << pos_cartesian[0] << ", " << pos_cartesian[1] << "]." << std::endl;
+                    }
+                }
+            }
+        }; // end of Reading_GPS
+
+        auto Reading_Velocity{[&m_dynamics, &VERBOSE](cluon::data::Envelope &&env)
+            {
+                //TODO: start from here
+            }
+        }; // end of Reading_Velocity
 
         //if ((od4_2->isRunning()) & ( (flag_ini_nomc <=3) ) ) //at least 2 frames of nominal control data are received
         if ((od4_2->isRunning()))   
         {
             //if ( flag_ini_nomc <=3)
             od4_2->dataTrigger(internal::nomState::ID(), Input_Override_States);
+            od4_2->dataTrigger(opendlv::proxy::GeodeticWgs84Reading::ID(), Reading_GPS);
+            //od4_2->dataTrigger(???::ID(), Reading_Velocity);
             //std::cout << "testing od4_2 " <<  std::endl;
         }
 
@@ -489,6 +519,9 @@ Te ( 0)
 
 	omega_e = 0;
  	Te = 0;
+
+    init_latitude = 0;
+    init_longitude = 0;
 
 }
 
@@ -844,7 +877,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
         double steering_angle_bar = state.steering_angle_bar;
         double acc_x_bar = state. acc_x_bar;
 
-        if(!ifnominal){
+        if(!ifNominal){
             //if the input is the x-speed: 
             xp_dot = input.speed_x; 
             state.v_body[0]= xp_dot;
@@ -879,7 +912,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
              distur[4] = dis_ey;
              distur[5] = dis_s;
 
-            if(!ifnominal){
+            if(!ifNominal){
                 out.vb_dot[0] +=  2*distur[0];
                 out.vb_dot[1] += 2*distur[1];
                 out.omegab_dot[2] += 2*distur[2];
@@ -903,7 +936,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
             out.acc_x_bar_dot = 0;
         }
 
-        if(!ifnominal){
+        if(!ifNominal){
             //if the input is the x-speed: 
             out.vb_dot[0] = 0; 
         }

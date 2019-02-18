@@ -160,7 +160,11 @@ public:
 
     //Maximum steering angle
     double MAX_STEERING;
-        bool ifnominal;
+        bool ifNominal;
+
+    // initial reference point (in wgs84)
+    double init_latitude;
+    double init_longitude;
 
 private:
 	double omega_e;
