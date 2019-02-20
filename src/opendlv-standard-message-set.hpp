@@ -12510,6 +12510,14 @@ class LIB_API nomU {
             return m_steer;
         }
         
+        inline nomU& speed(const double &v) noexcept {
+            m_speed = v;
+            return *this;
+        }
+        inline double speed() const noexcept {
+            return m_speed;
+        }
+        
 
     public:
         template<class Visitor>
@@ -12519,6 +12527,8 @@ class LIB_API nomU {
             doVisit(1, std::move("double"s), std::move("acc"s), m_acc, visitor);
             
             doVisit(2, std::move("double"s), std::move("steer"s), m_steer, visitor);
+            
+            doVisit(3, std::move("double"s), std::move("speed"s), m_speed, visitor);
             
             visitor.postVisit();
         }
@@ -12532,6 +12542,8 @@ class LIB_API nomU {
             
             doTripletForwardVisit(2, std::move("double"s), std::move("steer"s), m_steer, preVisit, visit, postVisit);
             
+            doTripletForwardVisit(3, std::move("double"s), std::move("speed"s), m_speed, preVisit, visit, postVisit);
+            
             std::forward<PostVisitor>(postVisit)();
         }
 
@@ -12540,6 +12552,8 @@ class LIB_API nomU {
         double m_acc{ 0.0 }; // field identifier = 1.
         
         double m_steer{ 0.0 }; // field identifier = 2.
+        
+        double m_speed{ 0.0 }; // field identifier = 3.
         
 };
 }
