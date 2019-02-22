@@ -236,24 +236,34 @@ int32_t main(int32_t argc, char *argv[])
                 od4_2.send(pprMsg);
                 od4_2.send(gsrMsg);*/
 
-                internal::nomU msgActualu;  //the control variable 
+                // internal::nomU msgActualu;  //the control variable 
+                opendlv::proxy::GroundSpeedRequest msgSpeed;
+                opendlv::proxy::GroundSteeringRequest msgSteering;
+
                 if(flag_nomu |  flag_nomstate | flag_actstate) {
-                    msgActualu.steer(0);
+                    /*msgActualu.steer(0);
 		    msgActualu.acc(0);
                     msgActualu.speed(16); //20190216: if the input to the actual system is speed:
+                    */
+                    msgSpeed.groundSpeed(16);
+                    msgSteering.groundSteering(0);
                 }
                 else{
-                    msgActualu.steer(u(0));
+                    /*msgActualu.steer(u(0));
 		    msgActualu.acc(u(1));
                     msgActualu.speed(u(1));  //20190216: if the input to the actual system is speed:
+                    */
+                    msgSpeed.groundSpeed(u(1));
+                    msgSteering.groundSteering(u(0));
                 }
-                od4_2.send(msgActualu);
+                od4_2.send(msgSpeed);
+                od4_2.send(msgSteering);
 
                 std::ofstream txt2("/tmp/data_msg_actual_u.txt", std::ios::out | std::ios::app);
                 if (txt2.is_open())
                 {
                     //the clock is not accurate: 
-                    txt2 << ((double)clock())/CLOCKS_PER_SEC << '\t' << msgActualu.acc() << '\t' << msgActualu.steer() << '\n';
+                    txt2 << ((double)clock())/CLOCKS_PER_SEC << '\t' << msgSpeed.groundSpeed() << '\t' << msgSteering.groundSteering() << '\n';
                     txt2.close();
                 }
                 else std::cerr << "WARNING: Unable to save data into the file <data_msg_nom_u.txt>." << std::endl;
