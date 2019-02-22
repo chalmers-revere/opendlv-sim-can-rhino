@@ -12,8 +12,8 @@ services:
 # TODO: verify the source CID from the truck (as cid2)
   nominal_dynamics:
     image: adam2092/rhino-sim-test:v0.0.7
-    depends_on: 
-    - vehicle_model
+# depends_on: 
+#- vehicle_model
     network_mode: "host"
     volumes:
     - /tmp:/tmp
