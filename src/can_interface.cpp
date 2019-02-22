@@ -69,7 +69,7 @@ int32_t main(int32_t argc, char **argv)
             double s{0.0};
             double ey{0.0};
             double omega_body[3]{};
-            double v_body{0.0};
+            double v_body{16.0};
             float heading{0.0};
         }All_vars;
 
@@ -183,6 +183,24 @@ int32_t main(int32_t argc, char **argv)
                     {
                         std::cout << "Position and Kinematic state messages sent." << std::endl;
                     }
+
+                        // Data saving into txt file (if "save_file" indicated)
+                        // number of rows = length of time 
+                        // each row contains the following data, seperated by tab: 
+                        // time nomStateMsg(all attributes)
+                    {
+                        std::ofstream txt("/tmp/data_model_state.txt", std::ios::out | std::ios::app);
+                        if (txt.is_open())
+                        {
+                                txt << 0 << '\t'
+                                << msg_3.xp_dot() << '\t' << msg_3.yp_dot() << '\t' 
+                                << msg_3.psi_dot() << '\t' << msg_3.epsi() << '\t' 
+                                << msg_3.ey() << '\t' << msg_3.s() << '\t' 
+                               << msg_3.steer() << '\t' << msg_3.acc() << '\n';
+                                txt.close();
+                        }
+                        else std::cerr << "WARNING: Unable to save data into the file <" << "/tmp/data_model_state.txt" << ">." << std::endl;
+                     }
 
                     return false;
                 }

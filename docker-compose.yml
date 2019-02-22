@@ -8,6 +8,14 @@ services:
 #    - /tmp:/tmp/
 #    command: "opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=150 --save_file=/tmp/data_model_state.txt "
 
+# $ docker run --rm -ti --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 can_interface --cid=100 --freq=50 --verbose
+  can_interface:
+    image: adam2092/rhino-sim-test:v0.0.8
+    network_mode: "host"
+    volumes:
+    - /tmp:/tmp/
+    command: "can_interface --cid=100 --freq=150" 
+
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 opendlv-sim-can-rhino --cid=113 --cid2=100 --freq=150 --verbose
 # TODO: verify the source CID from the truck (as cid2)
   nominal_dynamics:
@@ -49,10 +57,4 @@ services:
 #    -   8080:8080
 #    command: "--cid=114"
 
-# $ docker run --rm -ti --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 can_interface --cid=100 --freq=50 --verbose
-  can_interface:
-    image: adam2092/rhino-sim-test:v0.0.8
-    network_mode: "host"
-    volumes:
-    - /tmp:/tmp/
-    command: "can_interface --cid=100 --freq=50" 
+

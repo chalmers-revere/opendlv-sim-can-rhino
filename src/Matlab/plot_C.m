@@ -10,12 +10,12 @@ u_ctrl = data_msg_nom_u(:,2:3); %nominal
 u_actual = data_msg_actual_u(:,2:3);  %actual 
 
 y1_nom = data_nominal_states(:,2:9);
-T_sampl_nom = 0.01; 
+T_sampl_nom = 1/150; 
 t = T_sampl_nom:T_sampl_nom:T_sampl_nom*size(y1_nom,1);
 
 y1_actual = data_model_state(:,2:9);
 t_actual = T_sampl_nom:T_sampl_nom:T_sampl_nom*size(data_model_state,1);
-
+t_uactual = T_sampl_nom:T_sampl_nom:T_sampl_nom*size(u_actual,1);
 
 figure(1);
 subplot(4,1,1);
@@ -94,8 +94,14 @@ dot_psi = y1_actual(:,3);
 a = 1.68; 
 b = 1.715; 
 
- 
-alpha_f= (dot_y+a*dot_psi)./dot_x - delta; 
+
+if length(delta)< length(dot_y)
+    delta = [delta; delta(end)* (ones(length(dot_y) - length(delta), 1))];
+elseif length(delta)> length(dot_y)
+    dot_y = [dot_y; dot_y(end)* (ones(length(delta) - length(dot_y), 1))];
+    delta = delta(1:length(dot_y));
+end
+alpha_f= (dot_y+a*dot_psi)./dot_x - delta;
 alpha_r = (dot_y -b*dot_psi)./dot_x; 
 alpha_f(dot_x<=1e-1) = 0;
 alpha_r(dot_x<=1e-1) = 0;
@@ -209,10 +215,10 @@ ylabel(' steer(rad)');
  
  figure(5); 
  subplot(2,1,1);
-  plot(t_actual, u_actual(:,1));  title('actual control'); 
+  plot(t_uactual, u_actual(:,1));  title('actual control'); 
 ylabel('  a_x(m/s^2)');
  subplot(2,1,2);
-  plot(t_actual, u_actual(:,2)); 
+  plot(t_uactual, u_actual(:,2)); 
 ylabel('  steer(rad)');
  xlabel('time(s)');
  
