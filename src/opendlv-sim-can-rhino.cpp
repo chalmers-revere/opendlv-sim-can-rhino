@@ -18,8 +18,8 @@
 #include "cluon-complete.hpp"
 #include "opendlv-standard-message-set.hpp"
 
-// GPS converter
-#include "WGS84toCartesian.hpp"
+//// GPS converter
+// #include "WGS84toCartesian.hpp"
 
 #include <cstdint>
 #include <iostream>
@@ -34,7 +34,7 @@
 int32_t main(int32_t argc, char **argv) { 
     int flag_ini_nomc{0}; 
     bool flag_ini_actdy{true}; 
-    bool flag_ini_position{false};
+//    bool flag_ini_position{false};
 
     dynamics m_dynamics;    
     int32_t retCode{0};
@@ -42,7 +42,7 @@ int32_t main(int32_t argc, char **argv) {
     if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq")) || (0 == commandlineArguments.count("cid2") )) {
         std::cerr << argv[0] << " simulates can-rhino." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --cid2=<Second OD4Session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--nominal] [--verbose] [--save_file=/tmp/data_msg_nom_state.txt]" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--nominal] [--on_vehicle] [--verbose] [--save_file=/tmp/data_msg_nom_state.txt]" << std::endl;
         std::cerr << "(The second OD4Session is for vehicle state overriding from external source.)" << std::endl;
         retCode = 1;
     } else {
@@ -54,6 +54,7 @@ int32_t main(int32_t argc, char **argv) {
 
         const bool ifNominal{commandlineArguments.count("nominal") != 0};
         m_dynamics.ifNominal = ifNominal; 
+
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
 //        cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
@@ -231,7 +232,7 @@ int32_t main(int32_t argc, char **argv) {
             }
         };
 
-        auto Reading_GPS{[&m_dynamics, &VERBOSE, &flag_ini_position](cluon::data::Envelope &&env)
+/*        auto Reading_GPS{[&m_dynamics, &VERBOSE, &flag_ini_position](cluon::data::Envelope &&env)
             {
                 opendlv::proxy::GeodeticWgs84Reading reading_wgs84 = cluon::extractMessage<opendlv::proxy::GeodeticWgs84Reading>(std::move(env));
                 if (!flag_ini_position) // first reading of GPS i.e. no ref point set yet
@@ -247,6 +248,7 @@ int32_t main(int32_t argc, char **argv) {
                     std::array<double, 2> ref_point{m_dynamics.init_latitude, m_dynamics.init_longitude};
                     std::array<double, 2> pos_wgs84{reading_wgs84.latitude(), reading_wgs84.longitude()};
                     std::array<double, 2> pos_cartesian{wgs84::toCartesian(ref_point, pos_wgs84)};
+
                     m_dynamics.state_global.s = pos_cartesian[0];
                     m_dynamics.state_global.ey = pos_cartesian[1];
                     if (VERBOSE)
@@ -285,15 +287,18 @@ int32_t main(int32_t argc, char **argv) {
                 }
             }
         }; // end of Reading_GroundSpeed
-
+*/
         //if ((od4_2->isRunning()) & ( (flag_ini_nomc <=3) ) ) //at least 2 frames of nominal control data are received
-        if ((od4_2->isRunning()))   
+        if (od4_2->isRunning())   
         {
             //if ( flag_ini_nomc <=3)
             od4_2->dataTrigger(internal::nomState::ID(), Input_Override_States);
-            od4_2->dataTrigger(opendlv::proxy::GeodeticWgs84Reading::ID(), Reading_GPS);
-            od4_2->dataTrigger(opendlv::proxy::AngularVelocityReading::ID(), Reading_AngularVelocity);
-            od4_2->dataTrigger(opendlv::proxy::GroundSpeedReading::ID(), Reading_GroundSpeed);
+            /*if (ifOnVehicle)
+            {
+                od4_2->dataTrigger(opendlv::proxy::GeodeticWgs84Reading::ID(), Reading_GPS);
+                od4_2->dataTrigger(opendlv::proxy::AngularVelocityReading::ID(), Reading_AngularVelocity);
+                od4_2->dataTrigger(opendlv::proxy::GroundSpeedReading::ID(), Reading_GroundSpeed);
+            }*/
             //std::cout << "testing od4_2 " <<  std::endl;
         }
 
@@ -303,8 +308,9 @@ int32_t main(int32_t argc, char **argv) {
             {
                 m_dynamics.T_samp = 0.001;  //sampling time           
                 m_dynamics.integrator(VERBOSE);
-                 
+                return false;
             }
+            
       }; 
 
 
