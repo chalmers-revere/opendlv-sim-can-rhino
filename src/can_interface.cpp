@@ -147,24 +147,37 @@ int32_t main(int32_t argc, char **argv)
             auto Output{[&var, &VERBOSE, od4_2]() -> bool
                 {
                     opendlv::sim::Frame msg;
-                    // TODO: frame rotation here
-
-                    //msg.x(var.s);
-                    //msg.y(var.ey);
-                    //msg.yaw(var.heading);
+                    double psi_ini = var.init_heading + 3.14159265/2; 
+                    double s = cos(psi_ini) * var.s + sin(psi_ini) * var.ey; 
+                    double ey = -sin(psi_ini) * var.s + cos(psi_ini) * var.ey;
+                    double psi =  var.heading - var.init_heading; 
+                    msg.x(s);
+                    msg.y(ey);
+                    msg.yaw(psi);
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
                     od4_2->send(msg);
 
                     opendlv::sim::KinematicState msg_2;
-                    //msg_2.vx(var.v_body);
+                    msg_2.vx(var.v_body);
                     msg_2.vy(0.0);
-                    //msg_2.yawRate(var.omega_body[2]);
+                    msg_2.yawRate(var.omega_body[2]);
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
                     od4_2->send(msg_2);
+
+                    internal::nomState msg_3;
+                    msg_3.xp_dot(var.v_body);
+                    msg_3.yp_dot(0);
+                    msg_3.psi_dot(var.omega_body[2]);
+                    msg_3.epsi(psi);
+                    msg_3.ey(ey);
+                    msg_3.s(s);
+                    msg_3.steer(0);
+                    msg_3.acc(0); 
+                    od4_2->send(msg_3);
 
                     if (VERBOSE)
                     {
@@ -178,24 +191,37 @@ int32_t main(int32_t argc, char **argv)
             auto Output_dataTriggered{[&var, &VERBOSE, od4_2](cluon::data::Envelope &&env) -> bool
                 {
                     opendlv::sim::Frame msg;
-                    // TODO: frame rotation here
-
-                    //msg.x(var.s);
-                    //msg.y(var.ey);
-                    //msg.yaw(var.heading);
+                    double psi_ini = var.init_heading + 3.14159265/2; 
+                    double s = cos(psi_ini) * var.s + sin(psi_ini) * var.ey; 
+                    double ey = -sin(psi_ini) * var.s + cos(psi_ini) * var.ey;
+                    double psi =  var.heading - var.init_heading; 
+                    msg.x(s);
+                    msg.y(ey);
+                    msg.yaw(psi);
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
                     od4_2->send(msg);
 
                     opendlv::sim::KinematicState msg_2;
-                    //msg_2.vx(var.v_body);
+                    msg_2.vx(var.v_body);
                     msg_2.vy(0.0);
-                    //msg_2.yawRate(var.omega_body[2]);
+                    msg_2.yawRate(var.omega_body[2]);
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
                     od4_2->send(msg_2);
+
+                    internal::nomState msg_3;
+                    msg_3.xp_dot(var.v_body);
+                    msg_3.yp_dot(0);
+                    msg_3.psi_dot(var.omega_body[2]);
+                    msg_3.epsi(psi);
+                    msg_3.ey(ey);
+                    msg_3.s(s);
+                    msg_3.steer(0);
+                    msg_3.acc(0); 
+                    od4_2->send(msg_3);
 
                     if (VERBOSE)
                     {
