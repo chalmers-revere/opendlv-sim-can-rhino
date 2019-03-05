@@ -219,7 +219,7 @@ int32_t main(int32_t argc, char **argv)
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
-                    od4_2->send(msg);
+                    //od4_2->send(msg);
 
                     opendlv::sim::KinematicState msg_2;
                     msg_2.vx(var.v_body);
@@ -228,7 +228,7 @@ int32_t main(int32_t argc, char **argv)
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
-                    od4_2->send(msg_2);
+                    //od4_2->send(msg_2);
 
                     internal::nomState msg_3;
                     msg_3.xp_dot(var.v_body);
