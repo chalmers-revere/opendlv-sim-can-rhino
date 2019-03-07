@@ -224,6 +224,16 @@ int32_t main(int32_t argc, char *argv[])
 
                     // The following line is in the original .m file as an alternative output formula
                     // u= L_g_f_output\( -k1*p_err -k2*p_err_dot - L_f_f_output + L_g_f_output_nom*u_nom + L_f_f_output_nom);
+               
+                    Eigen::VectorXd xi_err(6); 
+                    xi_err<< real_state.xp_dot-nom_state.xp_dot, real_state.yp_dot - nom_state.yp_dot,  real_state.psi_dot - nom_state.psi_dot,
+                     real_state.epsi - nom_state.epsi, real_state.ey - nom_state.ey,  real_state.s - nom_state.s; 
+                    Eigen::MatrixXd K_state(2,6);
+                    K_state <<  -0.0000,   1.7535,    2.3066,   26.2826,    5.4772,   -0.0000,
+                                4.5776,    0.0000,   -0.0000,   -0.0000,   -0.0000,   5.4772;
+                    Eigen::Matrix2d k_scale;
+                    k_scale << 1, 0, 0, 1; 
+                    u = -k_scale*K_state * xi_err + nom_u;  //more stable 
                     
                     //20190216: if the input to the actual system is speed: 
                     u(1) = -0.5 * p_err(1)  + nom_state.xp_dot;  
