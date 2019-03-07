@@ -10,7 +10,7 @@ services:
 
 # $ docker run --rm -ti --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 can_interface --cid=100 --freq=50 --verbose
   can_interface:
-    image: adam2092/rhino-sim-test:v0.0.8
+    image: adam2092/rhino-sim-test:v0.0.8.2
     network_mode: "host"
     volumes:
     - /tmp:/tmp/
@@ -19,7 +19,7 @@ services:
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 opendlv-sim-can-rhino --cid=113 --cid2=100 --freq=150 --verbose
 # TODO: verify the source CID from the truck (as cid2)
   nominal_dynamics:
-    image: adam2092/rhino-sim-test:v0.0.8
+    image: adam2092/rhino-sim-test:v0.0.8.2
 #    depends_on: 
 #    - vehicle_model
     network_mode: "host"
@@ -29,7 +29,7 @@ services:
 
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 virtual_control --cid=113 --freq=150 --save_file=/tmp/data_nominal_states.txt --verbose
   virtual_control:
-    image: adam2092/rhino-sim-test:v0.0.8
+    image: adam2092/rhino-sim-test:v0.0.8.2
     depends_on:
     - nominal_dynamics
     network_mode: "host"
@@ -40,7 +40,7 @@ services:
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 actual_control --cid=113 --cid2=100 --freq=150 --verbose
 # TODO: verify the destination CID to the controller (as CID2)
   actual_control:
-    image: adam2092/rhino-sim-test:v0.0.8
+    image: adam2092/rhino-sim-test:v0.0.8.2
     depends_on:
     - nominal_dynamics
     network_mode: "host"

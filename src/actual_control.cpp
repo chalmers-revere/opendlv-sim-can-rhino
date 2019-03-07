@@ -256,8 +256,8 @@ int32_t main(int32_t argc, char *argv[])
                     msgSpeed.groundSpeed(u(1));
                     msgSteering.groundSteering(u(0));
                 }
-                od4_2.send(msgSpeed);
-                od4_2.send(msgSteering);
+                //od4_2.send(msgSpeed);
+                //od4_2.send(msgSteering);
 
                 std::ofstream txt2("/tmp/data_msg_actual_u.txt", std::ios::out | std::ios::app);
                 if (txt2.is_open())
