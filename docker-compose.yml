@@ -1,60 +1,108 @@
 version: '2'
 services:
-# $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.3 opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=50  --save_file=/tmp/data_model_state.txt --verbose
-#  vehicle_model:
-#    image: adam2092/rhino-sim-test:v0.0.7
-#    network_mode: "host"
-#    volumes:
-#    - /tmp:/tmp/
-#    command: "opendlv-sim-can-rhino --cid=114 --cid2=115 --freq=150 --save_file=/tmp/data_model_state.txt "
+# Partially copied from rhino.yml as suggested
 
-# $ docker run --rm -ti --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 can_interface --cid=100 --freq=50 --verbose
-  can_interface:
-    image: adam2092/rhino-sim-test:v0.0.8.2
-    network_mode: "host"
-    volumes:
-    - /tmp:/tmp/
-    command: "can_interface --cid=100 --freq=150" 
+################################################################################
+#
+# the CAN Interfaces for Rhino need an odsupercomponent.
+#
+################################################################################
 
-# $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 opendlv-sim-can-rhino --cid=113 --cid2=100 --freq=150 --verbose
-# TODO: verify the source CID from the truck (as cid2)
-  nominal_dynamics:
-    image: adam2092/rhino-sim-test:v0.0.8.2
-#    depends_on: 
-#    - vehicle_model
-    network_mode: "host"
-    volumes:
-    - /tmp:/tmp
-    command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=100 --nominal --freq=150 --save_file=/tmp/data_nominal_states.txt  "
+    odsupercomponent:
+        container_name: odsupercomponent
+        image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:v0.1.5
+        restart: on-failure
+        network_mode: "host"
+        volumes:
+        - .:/opt/opendlv.data
+        cap_add:
+        - SYS_NICE
+        entrypoint: ""
+        command: "nice -n 0 /opt/od4/bin/odsupercomponent --configuration=/opt/opendlv.data/configuration --cid=100"
 
-# $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 virtual_control --cid=113 --freq=150 --save_file=/tmp/data_nominal_states.txt --verbose
-  virtual_control:
-    image: adam2092/rhino-sim-test:v0.0.8.2
-    depends_on:
-    - nominal_dynamics
-    network_mode: "host"
-    volumes:
-    - /tmp:/tmp
-    command: "virtual_control --cid=113 --freq=150 " 
+######################################################################################
+#
+# Microservices for RHINO (Volvo FH16).
+#
+######################################################################################
 
-# $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.8 actual_control --cid=113 --cid2=100 --freq=150 --verbose
-# TODO: verify the destination CID to the controller (as CID2)
-  actual_control:
-    image: adam2092/rhino-sim-test:v0.0.8.2
-    depends_on:
-    - nominal_dynamics
-    network_mode: "host"
-    volumes:
-    - /tmp:/tmp/
-    command: "actual_control --cid=113 --cid2=100 --freq=150" 
+    # OxTS GPS (10.40.40.56)
+    dev-gps-ncom:
+        container_name: dev-gps-ncom
+        image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.15
+        restart: on-failure
+        network_mode: "host"
+        command: "--ncom_ip=0.0.0.0 --ncom_port=3000 --cid=100 --id=0"
 
-# $ docker run --rm -ti --net=host -p 8080:8080 chalmersrevere/opendlv-signal-viewer-multi:v0.0.8 --cid=100
-#  vehicle-view-web:
-#    image: chalmersrevere/opendlv-signal-viewer-multi:v0.0.8
-#    restart: on-failure
-#    network_mode: "host"
-#    ports:
-#    -   8080:8080
-#    command: "--cid=114"
+    # CAN interface to access Rhino.    
+    opendlv-cangw-rhino:
+        container_name: opendlv-cangw-rhino
+        image: chalmersrevere/opendlv-device-cangw-rhino-amd64:v0.0.5
+        restart: on-failure
+        network_mode: "host"
+        privileged: true
+        cap_add:
+        - SYS_NICE
+        entrypoint: ""
+        # command: "nice -n -1 --cid=100 --id=1 --can=can0 --enablethrottle --enablebrake --enablesteering"
+        command: "nice -n -1 --cid=100 --id=1 --can=can0"
 
+    # Web-application for viewing vehicle data.
+    vehicle-view:
+        container_name: opendlv-vehicle-view
+        image: chalmersrevere/opendlv-vehicle-view-multi:v0.0.57
+        restart: always
+        network_mode: "host"
+        volumes:
+        - ~/recordings:/opt/vehicle-view/recordings
+        - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+        - OD4SESSION_CID=100
+        - PLAYBACK_OD4SESSION_CID=200
+        - OPENDLV_VEHICLE_VIEW_PLATFORM=Rhino        
+        ports:
+        - "8081:8081"
+        cap_add:
+        - SYS_NICE
+        entrypoint: ""
+        command: "nice -n -15 node index.js"
 
+######################################################################################
+#
+# Microservices from Yushu and Yue
+#
+######################################################################################
+
+    can_interface:
+        image: adam2092/rhino-sim-test:v0.0.9
+        network_mode: "host"
+        depends_on:
+        - opendlv-cangw-rhino
+        volumes:
+        - /tmp:/tmp/
+        command: "can_interface --cid=100 --freq=150 --gps-id=0 --can-id=1"
+
+    nominal_dynamics:
+        image: adam2092/rhino-sim-test:v0.0.9
+        network_mode: "host"
+        volumes:
+        - /tmp:/tmp
+        command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=100 --nominal --freq=150 --save_file=/tmp/data_nominal_states.txt  "
+
+    virtual_control:
+        image: adam2092/rhino-sim-test:v0.0.9
+        depends_on:
+        - nominal_dynamics
+        network_mode: "host"
+        volumes:
+        - /tmp:/tmp
+        command: "virtual_control --cid=113 --freq=150 " 
+
+    actual_control:
+        image: adam2092/rhino-sim-test:v0.0.9
+        depends_on:
+        - nominal_dynamics
+        network_mode: "host"
+        volumes:
+        - /tmp:/tmp/
+        command: "actual_control --cid=113 --cid2=100 --freq=150" 
