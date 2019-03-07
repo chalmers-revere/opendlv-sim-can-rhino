@@ -234,9 +234,11 @@ int32_t main(int32_t argc, char *argv[])
                     Eigen::Matrix2d k_scale;
                     k_scale << 1, 0, 0, 1; 
                     u = -k_scale*K_state * xi_err + nom_u;  //more stable 
+                    //u = -k_scale*K_state * xi_err;
                     
                     //20190216: if the input to the actual system is speed: 
-                    u(1) = -0.5 * p_err(1)  + nom_state.xp_dot;  
+                    u(1) = -0.5 * p_err(1)  + nom_state.xp_dot; 
+                    u(1) = -0.5 * (real_state.s - nom_state.s)  + nom_state.xp_dot;   
                     //u(1) = 10;  u(0) = 0; //tune
                 }
                 /*opendlv::proxy::PedalPositionRequest pprMsg;

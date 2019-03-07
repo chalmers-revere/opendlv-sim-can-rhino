@@ -896,7 +896,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
        // double ey = state.ey;
         // double s = state.s;
 
-        double ka_steer = 3.0, ka_acc = 3.0;
+        double ka_steer = 10.0, ka_acc = 10.0;
         double steering_angle_bar = state.steering_angle_bar;
         double acc_x_bar = state. acc_x_bar;
 
@@ -935,7 +935,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
              distur[4] = dis_ey;
              distur[5] = dis_s;
 
-            if(!ifNominal){
+            /*if(!ifNominal){
                 out.vb_dot[0] +=  2*distur[0];
                 out.vb_dot[1] += 2*distur[1];
                 out.omegab_dot[2] += 2*distur[2];
@@ -944,7 +944,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
                 out.s_dot += 2*distur[5];
                // std::cout << "disturbance is added!"<< std::endl;
 
-            }
+            }*/
         }
         else
         {
