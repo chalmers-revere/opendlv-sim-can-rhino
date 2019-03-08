@@ -70,7 +70,7 @@ tra_com_dot(2) =1;   */
     double psi_dot_com = 0.0, p = Iz / (m * b);
 
     Eigen::Vector2d L_F_output, L_F_F_output;
-    double ka_steer = 10.0, ka_acc = 10.0;
+    double ka_steer = 3.0, ka_acc = 3.0;
 
     L_F_output << yp_dot * cos(epsi) + xp_dot * sin(epsi), xp_dot * cos(epsi) - yp_dot * sin(epsi);
 
@@ -134,9 +134,9 @@ tra_com_dot(2) =1;   */
     	(a*cf*yp_dot - b*cr*yp_dot + a^2*cf*psi_dot + b^2*cr*psi_dot - a*cf*steer*xp_dot))/(Iz*m*xp_dot^2)];  */
 
     Eigen::Matrix2d k1, k2, k3;
-    k1 << 1 * 2.2361, 0, 0, 1 * 2.2361;
-    k2 << 1 * 3.0187, 0, 0, 1 * 3.0187;
-    k3 << 1 * 3.9382, 0, 0, 1 * 3.9382;
+    k1 << 5 * 2.2361, 0, 0, 5 * 2.2361;
+    k2 << 5 * 3.0187, 0, 0, 5 * 3.0187;
+    k3 << 5 * 3.9382, 0, 0, 5 * 3.9382;
 
     Eigen::Vector2d u_nom_lin, u_nom;
     Eigen::Vector2d tempV2d, tempTail0, tempTail1, tempTail2;
