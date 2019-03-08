@@ -224,10 +224,43 @@ int32_t main(int32_t argc, char *argv[])
 
                     // The following line is in the original .m file as an alternative output formula
                     // u= L_g_f_output\( -k1*p_err -k2*p_err_dot - L_f_f_output + L_g_f_output_nom*u_nom + L_f_f_output_nom);
-                    
+
+                    Eigen::VectorXd xi_err(6); 
+                    xi_err<< real_state.xp_dot-nom_state.xp_dot, real_state.yp_dot - nom_state.yp_dot,  real_state.psi_dot - nom_state.psi_dot,
+                     real_state.epsi - nom_state.epsi, real_state.ey - nom_state.ey,  real_state.s - nom_state.s; 
+                    Eigen::MatrixXd K_state(2,6);
+                    K_state <<  -0.0000,   1.7535,    2.3066,   26.2826,    5.4772,   -0.0000,
+                                4.5776,    0.0000,   -0.0000,   -0.0000,   -0.0000,   5.4772;  //lqr
+                    K_state << 0.0000,    1.6340,    3.6865,   26.1752,    5.4772,    0.0000,
+                               4.5776,   -0.0000,    0.0000,   -0.0000,   -0.0000,    5.4772;  //lqr
+                    Eigen::Matrix2d k_scale;
+                    k_scale << 1, 0, 0, 1; 
+                    u = -k_scale*K_state * xi_err + nom_u;  //more stable 
+                    //u = -k_scale*K_state * xi_err;            
+                                        
                     //20190216: if the input to the actual system is speed: 
-                    u(1) = -0.5 * p_err(1)  + nom_state.xp_dot;  
+                    u(1) = -0.5 * p_err(1)  + nom_state.xp_dot; 
+                    u(1) = -0.5 * (real_state.s - nom_state.s)  + nom_state.xp_dot;   
                     //u(1) = 10;  u(0) = 0; //tune
+
+                    //input is the speed and steering angle: 
+                    Eigen::VectorXd xi_err_speed(5); 
+                    xi_err_speed << real_state.yp_dot - nom_state.yp_dot,  real_state.psi_dot - nom_state.psi_dot,
+                     real_state.epsi - nom_state.epsi, real_state.ey - nom_state.ey,  real_state.s - nom_state.s; 
+                    Eigen::MatrixXd K_state_speed(2,5);
+                    K_state_speed << 3.6009,   -6.0016,  -17.6119,  -1.7321,    0.0000,
+                                     0.0000,   -0.0000,   -0.0000,   -0.0000,   1.7321;  //lqr
+                    K_state_speed << 10.5182,  -17.8675,  -54.7332,   -5.4772,  -0.0000,
+                                     -0.0000,    0.0000,    0.0000,    0.0000,   5.4772; 
+                    //K_state_speed << 4.6047,   -0.5203,  -25.2560,   -5.4772,   -0.0000,
+                     //  -0.0000,   0.0000,    0.0000,    0.0000,   5.4772; 
+
+                    Eigen::Matrix2d k_scale_speed;
+                    k_scale_speed << 1, 0, 0, 1; 
+                    nom_u(1) = nom_state.xp_dot; 
+                    Eigen::Vector2d u_tmp;
+                    u_tmp = -k_scale_speed*K_state_speed * xi_err_speed + nom_u;  //more stable 
+                    u(1) = u_tmp(1);
                 }
                 /*opendlv::proxy::PedalPositionRequest pprMsg;
                 opendlv::proxy::GroundSteeringRequest gsrMsg;

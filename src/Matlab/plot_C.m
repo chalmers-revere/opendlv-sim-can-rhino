@@ -98,7 +98,9 @@ b = 1.715;
 if length(delta)< length(dot_y)
     delta = [delta; delta(end)* (ones(length(dot_y) - length(delta), 1))];
 elseif length(delta)> length(dot_y)
-    dot_y = [dot_y; dot_y(end)* (ones(length(delta) - length(dot_y), 1))];
+%     dot_y = [dot_y; dot_y(end)* (ones(length(delta) - length(dot_y), 1))];
+%     dot_x = [dot_x; dot_x(end)* (ones(length(delta) - length(dot_x), 1))];
+%     dot_psi = [dot_psi; dot_psi(end)* (ones(length(delta) - length(dot_psi), 1))];
     delta = delta(1:length(dot_y));
 end
 alpha_f= (dot_y+a*dot_psi)./dot_x - delta;
