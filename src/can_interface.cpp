@@ -38,11 +38,15 @@ int32_t main(int32_t argc, char **argv)
     // int32_t retCode{0};
 
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
-    if ((0 == commandlineArguments.count("cid")) || (0 == (commandlineArguments.count("freq") ^ commandlineArguments.count("dt")))) 
+    if ((0 == commandlineArguments.count("cid")) 
+        || (0 == commandlineArguments.count("gps-id")) 
+        || (0 == commandlineArguments.count("can-id")) 
+        || (0 == (commandlineArguments.count("freq") ^ commandlineArguments.count("dt")))) 
     {
         std::cerr << argv[0] << "CAN interface." << std::endl;
-        std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> [--freq=<Frequency>] [--dt<if sending in timeTriggered way>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=114 [--freq=50 or --dt] [--verbose]" << std::endl;
+        std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --gps-id=<Sender ID of GPS message> --can-id=<Sender ID of CAN message> [--freq=<Frequency>] [--dt<if sending in timeTriggered way>] [--verbose]" << std::endl;
+        /* TODO: Verify if necessary to separate inout and output ID */
+        std::cerr << "Example: " << argv[0] << " --cid=114 --gps-id=0 --can-id=1 [--freq=50 or --dt] [--verbose]" << std::endl;
         // std::cerr << "(The second OD4Session is for vehicle state overriding from external source.)" << std::endl;
         return -1;
     } else {
@@ -59,6 +63,9 @@ int32_t main(int32_t argc, char **argv)
         }
 
         uint16_t argCID = static_cast<uint16_t>(std::stoi(commandlineArguments["cid"]));
+        uint16_t argGPS_ID = static_cast<uint16_t>(std::stoi(commandlineArguments["gps-id"]));
+        uint16_t argCAN_ID = static_cast<uint16_t>(std::stoi(commandlineArguments["can-id"]));
+
         std::shared_ptr<cluon::OD4Session> od4_2 = std::shared_ptr<cluon::OD4Session>(new cluon::OD4Session(argCID));
         /*"od4_2" means "external channel" by default*/
 
@@ -78,8 +85,12 @@ int32_t main(int32_t argc, char **argv)
         while (od4_2->isRunning())
         {
 
-            auto Reading_GPS{[&var, &VERBOSE, &flag_ini_position](cluon::data::Envelope &&env)
+            auto Reading_GPS{[&var, &VERBOSE, &flag_ini_position, &argGPS_ID](cluon::data::Envelope &&env)
                 {
+                    if (env.senderStamp() != argGPS_ID)
+                    {
+                        return;
+                    }
                     opendlv::logic::sensation::Geolocation reading_wgs84 = cluon::extractMessage<opendlv::logic::sensation::Geolocation>(std::move(env));
                     if (!flag_ini_position) // first reading of GPS i.e. no ref point set yet
                     {
@@ -109,8 +120,12 @@ int32_t main(int32_t argc, char **argv)
                 }
             }; // end of Reading_GPS
 
-            auto Reading_AngularVelocity{[&var, &VERBOSE](cluon::data::Envelope &&env)
+            auto Reading_AngularVelocity{[&var, &VERBOSE, &argGPS_ID](cluon::data::Envelope &&env)
                 {
+                    if (env.senderStamp() != argGPS_ID)
+                    {
+                        return;
+                    }
                     opendlv::proxy::AngularVelocityReading reading_ang_vel = cluon::extractMessage<opendlv::proxy::AngularVelocityReading>(std::move(env));
                     var.omega_body[0] = reading_ang_vel.angularVelocityX();
                     var.omega_body[1] = reading_ang_vel.angularVelocityY();
@@ -125,8 +140,12 @@ int32_t main(int32_t argc, char **argv)
                 }
             }; // end of Reading_AngularVelocity
 
-            auto Reading_GroundSpeed{[&var, &VERBOSE](cluon::data::Envelope &&env)
+            auto Reading_GroundSpeed{[&var, &VERBOSE, &argCAN_ID](cluon::data::Envelope &&env)
                 {
+                    if (env.senderStamp() != argCAN_ID)
+                    {
+                        return;
+                    }
                     opendlv::proxy::GroundSpeedReading reading_gs = cluon::extractMessage<opendlv::proxy::GroundSpeedReading>(std::move(env));
                     // TODO: verify the following line (regarding frames and potential need of conversion
                     var.v_body = reading_gs.groundSpeed();
@@ -144,7 +163,7 @@ int32_t main(int32_t argc, char **argv)
                 od4_2->dataTrigger(opendlv::proxy::GroundSpeedReading::ID(), Reading_GroundSpeed);
             }
 
-            auto Output{[&var, &VERBOSE, od4_2]() -> bool
+            auto Output{[&var, &VERBOSE, od4_2, &argCAN_ID]() -> bool
                 {
                     opendlv::sim::Frame msg;
                     double psi_ini = var.init_heading + 3.14159265/2; 
@@ -157,7 +176,7 @@ int32_t main(int32_t argc, char **argv)
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
-                    od4_2->send(msg);
+                    od4_2->send(msg, cluon::time::now(), argCAN_ID);
 
                     opendlv::sim::KinematicState msg_2;
                     msg_2.vx(var.v_body);
@@ -166,7 +185,7 @@ int32_t main(int32_t argc, char **argv)
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
-                    od4_2->send(msg_2);
+                    od4_2->send(msg_2, cluon::time::now(), argCAN_ID);
 
                     internal::nomState msg_3;
                     msg_3.xp_dot(var.v_body);
@@ -177,7 +196,7 @@ int32_t main(int32_t argc, char **argv)
                     msg_3.s(s);
                     msg_3.steer(0);
                     msg_3.acc(0); 
-                    od4_2->send(msg_3);
+                    od4_2->send(msg_3, cluon::time::now(), argCAN_ID);
 
                     if (VERBOSE)
                     {
@@ -206,7 +225,7 @@ int32_t main(int32_t argc, char **argv)
                 }
             };
 
-            auto Output_dataTriggered{[&var, &VERBOSE, od4_2](cluon::data::Envelope &&env) -> bool
+            auto Output_dataTriggered{[&var, &VERBOSE, od4_2, &argCAN_ID](cluon::data::Envelope &&env) -> bool
                 {
                     opendlv::sim::Frame msg;
                     double psi_ini = var.init_heading + 3.14159265/2; 
@@ -219,7 +238,7 @@ int32_t main(int32_t argc, char **argv)
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
-                    //od4_2->send(msg);
+                    //od4_2->send(msg, cluon::time::now(), argCAN_ID);
 
                     opendlv::sim::KinematicState msg_2;
                     msg_2.vx(var.v_body);
@@ -228,7 +247,7 @@ int32_t main(int32_t argc, char **argv)
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
-                    //od4_2->send(msg_2);
+                    //od4_2->send(msg_2, cluon::time::now(), argCAN_ID);
 
                     internal::nomState msg_3;
                     msg_3.xp_dot(var.v_body);
@@ -239,7 +258,7 @@ int32_t main(int32_t argc, char **argv)
                     msg_3.s(s);
                     msg_3.steer(0);
                     msg_3.acc(0); 
-                    od4_2->send(msg_3);
+                    od4_2->send(msg_3, cluon::time::now(), argCAN_ID);
 
                     if (VERBOSE)
                     {
