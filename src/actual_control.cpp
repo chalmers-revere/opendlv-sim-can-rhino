@@ -244,7 +244,10 @@ int32_t main(int32_t argc, char *argv[])
                     
                     //20190216: if the input to the actual system is speed: 
                     u(1) = -0.5 * p_err(1)  + nom_state.xp_dot; 
-                    u(1) = -0.5 * (real_state.s - nom_state.s)  + nom_state.xp_dot;   
+                    u(1) = -10.0 * (real_state.s - nom_state.s)  + nom_state.xp_dot+0.1;
+                    //u(1) = -5.0 * (real_state.s - nom_state.s)  -0.1* (real_state.xp_dot - nom_state.xp_dot) + 16;
+                    
+
                     //u(1) = 10;  u(0) = 0; //tune
 
                     //input is the speed and steering angle: 
@@ -266,7 +269,7 @@ K_state_speed << 10.5182,  -17.8675,  -54.7332,   -5.4772,  -0.0000,
                     nom_u(1) = nom_state.xp_dot; 
                     Eigen::Vector2d u_tmp;
                     u_tmp = -k_scale_speed*K_state_speed * xi_err_speed + nom_u;  //more stable 
-                    u(1) = u_tmp(1);
+                   // u(1) = u_tmp(1);
                 }
                 /*opendlv::proxy::PedalPositionRequest pprMsg;
                 opendlv::proxy::GroundSteeringRequest gsrMsg;

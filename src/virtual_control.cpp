@@ -129,7 +129,7 @@ int32_t main(int32_t argc, char *argv[])
                 gl.ob_traj(false); 
 
                 // update trajd
-                gl.traj_gen(nom_state, FREQ);
+                gl.traj_gen(nom_state, FREQ*1);
 
                 //20190108:
 		//gl.trajd[0](2) = gl.trajd[0](2) + 16.0/FREQ;  

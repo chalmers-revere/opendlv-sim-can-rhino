@@ -191,7 +191,7 @@ int32_t main(int32_t argc, char **argv) {
                             else std::cerr << "WARNING: Unable to save data into the file <" << filename << ">." << std::endl;
                         }
                 
-                }
+                } //end of publish data: 
             }
         }; // end of Input_NomU
 
@@ -226,6 +226,7 @@ int32_t main(int32_t argc, char **argv) {
                         m_dynamics.state_global.v_body[0] = ext_state.xp_dot();
                         m_dynamics.state_global.v_body[1] = ext_state.yp_dot();
                         m_dynamics.state_global.omega_body[2] = ext_state.psi_dot(); // yaw rate
+                        m_dynamics.T_global = 0.0;
                         if (ifNominal) flag_ini_actdy = false; //received actual state data
                 }
             }
@@ -301,7 +302,8 @@ int32_t main(int32_t argc, char **argv) {
 
       auto solver_dynamics{[od4, &m_dynamics, &FREQ, &VERBOSE, &ifSave, &filename]() -> bool
             {
-                m_dynamics.T_samp = 0.001;  //sampling time           
+                //m_dynamics.T_samp = 0.0005;  //sampling time   
+                m_dynamics.T_samp = 1.0/FREQ;  //sampling time        
                 m_dynamics.integrator(VERBOSE);
                  
             }
@@ -328,6 +330,17 @@ int32_t main(int32_t argc, char **argv) {
                 od4->send(kinematicMsg);
 
                 if (VERBOSE) std::cout << "Current Kinematic states sent." << std::endl;
+
+                                opendlv::sim::Frame frameMsg;
+                                frameMsg.x((float)m_dynamics.state_global.s);
+                                frameMsg.y((float)m_dynamics.state_global.ey);
+                                frameMsg.z(0.0f);
+                                frameMsg.roll(0.0f);
+                                frameMsg.pitch(0.0f);
+                                frameMsg.yaw((float)m_dynamics.state_global.epsi);
+                                od4->send(frameMsg);
+
+                                if (VERBOSE) std::cout << "Current frameMsg sent." << std::endl;
 
                 // 2018 Dec. Update: broadcast nominal states as well
                 internal::nomState nomStateMsg;
@@ -382,7 +395,8 @@ int32_t main(int32_t argc, char **argv) {
         using namespace std::literals::chrono_literals;
         while (od4->isRunning() ) {
             //od4->timeTrigger(FREQ, Output);
-            od4->timeTrigger(1000, solver_dynamics);
+           //od4->timeTrigger(2000, solver_dynamics);
+            od4->timeTrigger(FREQ, solver_dynamics);
 //            std::this_thread::sleep_for(0.1s); // Commented as it is no longer simply data driven
 //            std::cout << "Running..." << std::endl;
         }
@@ -532,7 +546,7 @@ Te ( 0)
         state_global.s = 0;
 
 	//time step:
-	T_samp = 0.001;
+	//T_samp = 0.001;
 	T_global = 0;
 
 	agear = 6;
