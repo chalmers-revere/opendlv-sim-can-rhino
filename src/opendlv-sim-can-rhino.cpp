@@ -950,7 +950,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
              distur[4] = dis_ey;
              distur[5] = dis_s;
 
-            /*if(!ifNominal){
+            if(!ifNominal){
                 out.vb_dot[0] +=  2*distur[0];
                 out.vb_dot[1] += 2*distur[1];
                 out.omegab_dot[2] += 2*distur[2];
@@ -959,7 +959,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
                 out.s_dot += 2*distur[5];
                // std::cout << "disturbance is added!"<< std::endl;
 
-            }*/
+            }
         }
         else
         {
