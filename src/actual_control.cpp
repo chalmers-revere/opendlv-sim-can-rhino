@@ -244,7 +244,7 @@ int32_t main(int32_t argc, char *argv[])
                     
                     //20190216: if the input to the actual system is speed: 
                     u(1) = -0.5 * p_err(1)  + nom_state.xp_dot; 
-                    u(1) = -10.0 * (real_state.s - nom_state.s)  + nom_state.xp_dot+0.1;
+                    u(1) = -5.0 * (real_state.s - nom_state.s)  + nom_state.xp_dot+ 0.3*(double)rand() / RAND_MAX;
                     //u(1) = -5.0 * (real_state.s - nom_state.s)  -0.1* (real_state.xp_dot - nom_state.xp_dot) + 16;
                     
 

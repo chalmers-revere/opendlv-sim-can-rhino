@@ -26,7 +26,7 @@ services:
     network_mode: "host"
     volumes:
     - /tmp:/tmp
-    command: "virtual_control --cid=113 --freq=200 " 
+    command: "virtual_control --cid=113 --freq=150 " 
 
 # $ docker run -ti --rm --net=host -v /tmp:/tmp adam2092/rhino-sim-test:v0.0.3 actual_control --cid=113 --cid2=114 --freq=50 --verbose
   actual_control:
@@ -36,7 +36,7 @@ services:
     network_mode: "host"
     volumes:
     - /tmp:/tmp/
-    command: "actual_control --cid=113 --cid2=114 --freq=200 " 
+    command: "actual_control --cid=113 --cid2=114 --freq=150 " 
 
 # $ docker run --rm -ti --net=host -p 8080:8080 chalmersrevere/opendlv-signal-viewer-multi:v0.0.8 --cid=114
   vehicle-view-web:

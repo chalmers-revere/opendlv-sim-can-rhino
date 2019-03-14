@@ -918,7 +918,7 @@ void dynamics::diff_equation(state_vehicle &state, input_vehicle &input,  double
             //if the input is the x-speed: 
             xp_dot = input.speed_x; 
             state.v_body[0]= xp_dot;
-            ka_steer = 5, ka_acc = 30.0;
+            ka_steer = 3, ka_acc = 30.0;
         }
 
         if (state.v_body[0]> 1e-1)
