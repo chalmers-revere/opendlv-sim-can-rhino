@@ -8,17 +8,17 @@ services:
 #
 ################################################################################
 
-    odsupercomponent:
-        container_name: odsupercomponent
-        image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:v0.1.5
-        restart: on-failure
-        network_mode: "host"
-        volumes:
-        - .:/opt/opendlv.data
-        cap_add:
-        - SYS_NICE
-        entrypoint: ""
-        command: "nice -n 0 /opt/od4/bin/odsupercomponent --configuration=/opt/opendlv.data/configuration --cid=101"
+    # odsupercomponent:
+    #     container_name: odsupercomponent
+    #     image: seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:v0.1.5
+    #     restart: on-failure
+    #     network_mode: "host"
+    #     volumes:
+    #     - .:/opt/opendlv.data
+    #     cap_add:
+    #     - SYS_NICE
+    #     entrypoint: ""
+    #     command: "nice -n 0 /opt/od4/bin/odsupercomponent --configuration=/opt/opendlv.data/configuration --cid=101"
 
 ######################################################################################
 #
