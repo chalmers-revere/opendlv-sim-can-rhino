@@ -260,7 +260,7 @@ int32_t main(int32_t argc, char *argv[])
                     nom_u(1) = nom_state.xp_dot; 
                     Eigen::Vector2d u_tmp;
                     u_tmp = -k_scale_speed*K_state_speed * xi_err_speed + nom_u;  //more stable 
-                    u(1) = u_tmp(1);
+                    //u(1) = u_tmp(1);
                 }
                 /*opendlv::proxy::PedalPositionRequest pprMsg;
                 opendlv::proxy::GroundSteeringRequest gsrMsg;
