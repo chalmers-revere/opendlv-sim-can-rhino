@@ -18,7 +18,7 @@ services:
         cap_add:
         - SYS_NICE
         entrypoint: ""
-        command: "nice -n 0 /opt/od4/bin/odsupercomponent --configuration=/opt/opendlv.data/configuration --cid=100"
+        command: "nice -n 0 /opt/od4/bin/odsupercomponent --configuration=/opt/opendlv.data/configuration --cid=101"
 
 ######################################################################################
 #
@@ -26,38 +26,40 @@ services:
 #
 ######################################################################################
 
-    # OxTS GPS (10.40.40.56)
     dev-gps-ncom:
         container_name: dev-gps-ncom
-        image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.15
-        restart: on-failure
+        image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.16
+        cpuset: "1"
+        restart: always
         network_mode: "host"
-        command: "--ncom_ip=0.0.0.0 --ncom_port=3000 --cid=100 --id=0"
+        cap_add:
+        - SYS_NICE
+        entrypoint: ""
+        command: "nice -n -5 /usr/bin/opendlv-device-gps-ncom --ncom_ip=0.0.0.0 --ncom_port=3000 --cid=101 --id=0"
 
-    # CAN interface to access Rhino.    
     opendlv-cangw-rhino:
         container_name: opendlv-cangw-rhino
         image: chalmersrevere/opendlv-device-cangw-rhino-amd64:v0.0.5
-        restart: on-failure
+        cpuset: "1"
+        restart: always
         network_mode: "host"
         privileged: true
         cap_add:
         - SYS_NICE
         entrypoint: ""
-        # command: "nice -n -1 --cid=100 --id=1 --can=can0 --enablethrottle --enablebrake --enablesteering"
-        command: "nice -n -1 --cid=100 --id=1 --can=can0"
+        command: "nice -n -8 /usr/bin/opendlv-device-cangw-rhino --can=can0 --cid=101 --id=1"
 
-    # Web-application for viewing vehicle data.
     vehicle-view:
         container_name: opendlv-vehicle-view
-        image: chalmersrevere/opendlv-vehicle-view-multi:v0.0.57
+        image: chalmersrevere/opendlv-vehicle-view-multi:v0.0.60
+        cpuset: "0"
         restart: always
         network_mode: "host"
         volumes:
         - ~/recordings:/opt/vehicle-view/recordings
         - /var/run/docker.sock:/var/run/docker.sock
         environment:
-        - OD4SESSION_CID=100
+        - OD4SESSION_CID=101
         - PLAYBACK_OD4SESSION_CID=200
         - OPENDLV_VEHICLE_VIEW_PLATFORM=Rhino        
         ports:
@@ -74,23 +76,23 @@ services:
 ######################################################################################
 
     can_interface:
-        image: adam2092/rhino-sim-test:v0.0.9
+        image: adam2092/rhino-sim-test:v0.0.10
         network_mode: "host"
         depends_on:
         - opendlv-cangw-rhino
         volumes:
         - /tmp:/tmp/
-        command: "can_interface --cid=100 --freq=150 --gps-id=0 --can-id=1"
+        command: "can_interface --cid=101 --freq=150 --gps-id=0 --can-id=1"
 
     nominal_dynamics:
-        image: adam2092/rhino-sim-test:v0.0.9
+        image: adam2092/rhino-sim-test:v0.0.10
         network_mode: "host"
         volumes:
         - /tmp:/tmp
-        command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=100 --nominal --freq=150 --save_file=/tmp/data_nominal_states.txt  "
+        command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=101 --nominal --freq=150 --save_file=/tmp/data_nominal_states.txt  "
 
     virtual_control:
-        image: adam2092/rhino-sim-test:v0.0.9
+        image: adam2092/rhino-sim-test:v0.0.10
         depends_on:
         - nominal_dynamics
         network_mode: "host"
@@ -99,10 +101,10 @@ services:
         command: "virtual_control --cid=113 --freq=150 " 
 
     actual_control:
-        image: adam2092/rhino-sim-test:v0.0.9
+        image: adam2092/rhino-sim-test:v0.0.10
         depends_on:
         - nominal_dynamics
         network_mode: "host"
         volumes:
         - /tmp:/tmp/
-        command: "actual_control --cid=113 --cid2=100 --freq=150" 
+        command: "actual_control --cid=113 --cid2=101 --freq=150" 
