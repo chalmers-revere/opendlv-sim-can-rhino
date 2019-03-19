@@ -47,16 +47,37 @@ int32_t main(int32_t argc, char *argv[])
     }
     else FREQ = std::stoi(commandlineArguments["freq"]);
 
+    double v_ref = 16.0;
+    if (0 == commandlineArguments.count("v_ref"))
+    {
+        std::cerr << "WARNING: No v_ref assigned, using 16.0 by default ('--v_ref=16')." << std::endl;
+    }
+    else v_ref = std::stoi(commandlineArguments["v_ref"]);
+ 
+    int no_obs = 3;
+    if (0 == commandlineArguments.count("no_obs"))
+    {
+        std::cerr << "WARNING: No no_obs assigned, using 16.0 by default ('--no_obs=3')." << std::endl;
+    }
+    else no_obs = std::stoi(commandlineArguments["no_obs"]);
+
+    double pos_ycenter_ob = -1.2;
+    if (0 == commandlineArguments.count("pos_ycenter_ob"))
+    {
+        std::cerr << "WARNING: No pos_ycenter_ob assigned, using 16.0 by default ('--pos_ycenter_ob=-1.2')." << std::endl;
+    }
+    else pos_ycenter_ob = std::stoi(commandlineArguments["pos_ycenter_ob"]);
+
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-    FB_state nom_state(16.0, 0, 0, 0, 0, 0, 0, 0);
+    FB_state nom_state(v_ref, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 
-    Global_variables gl;
+    Global_variables gl(v_ref);
+    gl.no_ob = no_obs;
     gl.isVerbose = VERBOSE;
-
-    gl.generate_init_ob();
+    gl.generate_init_ob(pos_ycenter_ob);
 
     // Data saving into txt file
     // number of rows = number of obstacles
