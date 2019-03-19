@@ -116,6 +116,11 @@ target_link_libraries(can_interface ${LIBRARIES})
 add_executable(message_sender ${CMAKE_CURRENT_SOURCE_DIR}/src/message_sender.cpp $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
 target_link_libraries(message_sender ${LIBRARIES})
 
+# Speed controller from Ola
+add_executable(speed_controller ${CMAKE_CURRENT_SOURCE_DIR}/src/opendlv-logic-control-speed.cpp
+ $<TARGET_OBJECTS:${PROJECT_NAME}-core>)
+target_link_libraries(speed_controller ${LIBRARIES})
+
 ################################################################################
 # Enable unit testing.
 enable_testing()
@@ -133,3 +138,4 @@ install(TARGETS virtual_control DESTINATION bin COMPONENT virtual_control)
 install(TARGETS actual_control DESTINATION bin COMPONENT actual_control)
 install(TARGETS message_sender DESTINATION bin COMPONENT message_sender)
 install(TARGETS can_interface DESTINATION bin COMPONENT can_interface)
+install(TARGETS speed_controller DESTINATION bin COMPONENT can_interface)
