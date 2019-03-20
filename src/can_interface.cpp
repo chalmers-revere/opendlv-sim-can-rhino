@@ -190,18 +190,18 @@ int32_t main(int32_t argc, char **argv)
                     double s = cos(psi_ini) * var.s + sin(psi_ini) * var.ey; 
                     double ey = -sin(psi_ini) * var.s + cos(psi_ini) * var.ey;
                     double psi =  var.heading - var.init_heading; 
-                    msg.x(s);
-                    msg.y(ey);
-                    msg.yaw(psi);
+                    msg.x((float)s);
+                    msg.y((float)ey);
+                    msg.yaw((float)psi);
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
                     od4_2->send(msg, cluon::time::now(), argCAN_ID);
 
                     opendlv::sim::KinematicState msg_2;
-                    msg_2.vx(var.v_body);
+                    msg_2.vx((float)var.v_body);
                     msg_2.vy(0.0);
-                    msg_2.yawRate(var.omega_body[2]);
+                    msg_2.yawRate((float)var.omega_body[2]);
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
@@ -247,23 +247,29 @@ int32_t main(int32_t argc, char **argv)
 
             auto Output_dataTriggered{[&var, &VERBOSE, od4_2, &argCAN_ID](cluon::data::Envelope &&env) -> bool
                 {
+                    internal::nomU msgU = cluon::extractMessage<internal::nomU>(std::move(env));
+                    if (VERBOSE)
+                    {
+                        std::cout << "Received nomU, sending position and kinematic state messages ...";
+                    }
+                    
                     opendlv::sim::Frame msg;
                     double psi_ini = var.init_heading + 3.14159265/2; 
                     double s = cos(psi_ini) * var.s + sin(psi_ini) * var.ey; 
                     double ey = -sin(psi_ini) * var.s + cos(psi_ini) * var.ey;
                     double psi =  var.heading - var.init_heading; 
-                    msg.x(s);
-                    msg.y(ey);
-                    msg.yaw(psi);
+                    msg.x((float)s);
+                    msg.y((float)ey);
+                    msg.yaw((float)psi);
                     msg.z(0.0);
                     msg.roll(0.0);
                     msg.pitch(0.0);
                     //od4_2->send(msg, cluon::time::now(), argCAN_ID);
 
                     opendlv::sim::KinematicState msg_2;
-                    msg_2.vx(var.v_body);
+                    msg_2.vx((float)var.v_body);
                     msg_2.vy(0.0);
-                    msg_2.yawRate(var.omega_body[2]);
+                    msg_2.yawRate((float)var.omega_body[2]);
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
                     msg_2.pitchRate(0.0);
@@ -282,7 +288,7 @@ int32_t main(int32_t argc, char **argv)
 
                     if (VERBOSE)
                     {
-                        std::cout << "Position and Kinematic state messages sent." << std::endl;
+                        std::cout << "Sent." << std::endl;
                     }
 
                     return false;

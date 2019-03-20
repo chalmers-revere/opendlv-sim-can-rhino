@@ -37,7 +37,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
 //    vector<Eigen::RowVector2d> pos_ob_array, vel_ob_array;
 //    vector<double> radius_array;
     vector<Obstacle> ob_array;
-    for (int i = 0; i<traj_ob.size(); i++)
+    for (uint16_t i = 0; i<traj_ob.size(); i++)
     {
         Obstacle ob = traj_ob[i];
         if ((ob.pos_x >= (u.s - 3)) && (abs(u.s - ob.pos_x) <= dis_thresh))
@@ -130,7 +130,7 @@ vector<Coefficient> constraint_obstacles_dynamics_complex(FB_state u, Global_var
     if (abs(ey) >= 3.7) gl.dead = true;
     // line 171 so far
 
-    for (int i = 0; i < ob_array.size(); i++)
+    for (uint16_t i = 0; i < ob_array.size(); i++)
     {
         double pos_ob_x = ob_array[i].pos_x;
         double pos_ob_y = ob_array[i].pos_y;

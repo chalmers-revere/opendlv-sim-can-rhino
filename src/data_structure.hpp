@@ -189,7 +189,7 @@ public:
     Eigen::Vector2d u_tracking_global{};
     int scale_record{0};
     double v_ref;   //reference speed
-    float t_nom{0.0}; //time
+    double t_nom{0.0}; //time
 
     std::vector<Eigen::Vector3d> trajd{}; // this contains all the 3 variables in the following line
     //Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;

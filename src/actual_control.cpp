@@ -185,8 +185,8 @@ int32_t main(int32_t argc, char *argv[])
                     //double a = 1.41, b = 1.576, mu = 0.5, Fzf = 21940.0/2, Fzr = 21940.0/2;
                     //double cf = 65000.0, cr = 65000.0, m = 2194.0, Iz = 4770.0;
 
-		    double a = 1.68, b = 1.715, mu = 3.4812e+05, Fzf = 21940.0/2, Fzr = 21940.0/2;    
-		    double cf = 3.4812e+05, cr = 3.5537e+05, m = 9840.0, Iz = 41340.0;
+                    double a = 1.68, b = 1.715; // mu = 3.4812e+05, Fzf = 21940.0/2, Fzr = 21940.0/2; // Unused variables  
+                    double cf = 3.4812e+05, cr = 3.5537e+05, m = 9840.0; // Iz = 41340.0; // Unused variable
                     double psi_dot_com = 0.0; 
  
                     //feedback states:
@@ -294,7 +294,7 @@ int32_t main(int32_t argc, char *argv[])
 		    msgActualu.acc(0);
                     msgActualu.speed(16); //20190216: if the input to the actual system is speed:
                     */
-                    msgSpeed.groundSpeed(16);
+                    msgSpeed.groundSpeed(16.0);
                     msgSteering.groundSteering(0);
                 }
                 else{
@@ -302,8 +302,8 @@ int32_t main(int32_t argc, char *argv[])
 		    msgActualu.acc(u(1));
                     msgActualu.speed(u(1));  //20190216: if the input to the actual system is speed:
                     */
-                    msgSpeed.groundSpeed(u(1));
-                    msgSteering.groundSteering(u(0));
+                    msgSpeed.groundSpeed((float)u(1));
+                    msgSteering.groundSteering((float)u(0));
                 }
                 //od4_2.send(msgSpeed);
                 //od4_2.send(msgSteering);
