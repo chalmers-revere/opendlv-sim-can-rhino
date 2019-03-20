@@ -79,7 +79,7 @@ int32_t main(int32_t argc, char **argv)
             double s{0.0};
             double ey{0.0};
             double omega_body[3]{};
-            double v_body{16.0};
+            // double v_body{16.0};
             float heading{0.0};
             Eigen::Vector3d v_ned; 
             Eigen::Vector3d v_body_3d; 
@@ -165,15 +165,17 @@ int32_t main(int32_t argc, char **argv)
                 }
             }; // end of Reading_YawRate
 
-            auto Reading_GroundSpeed{[&var, &VERBOSE, &argCAN_ID](cluon::data::Envelope &&env)
+            auto Reading_GroundSpeed{[&var, &VERBOSE, &argGPS_ID](cluon::data::Envelope &&env)
                 {
-                    if (env.senderStamp() != argCAN_ID)
+                    if (env.senderStamp() != argGPS_ID)
                     {
                         return;
                     }
-                    opendlv::proxy::GroundSpeedReading reading_gs = cluon::extractMessage<opendlv::proxy::GroundSpeedReading>(std::move(env));
-                    // TODO: verify the following line (regarding frames and potential need of conversion
-                    var.v_body = reading_gs.groundSpeed();
+                    // opendlv::proxy::GroundSpeedReading reading_gs = cluon::extractMessage<opendlv::proxy::GroundSpeedReading>(std::move(env));
+                    // var.v_body = reading_gs.groundSpeed();
+                    opendlv::logic::sensation::Equilibrioception reading_gs = cluon::extractMessage<opendlv::logic::sensation::Equilibrioception>(std::move(env));
+
+                    var.v_ned << reading_gs.vx(), reading_gs.vy(), reading_gs.vz();
 
                     double phi= 0;
                     double theta= 0;
@@ -191,7 +193,10 @@ int32_t main(int32_t argc, char **argv)
 
                     if (VERBOSE)
                     {
-                        std::cout << "Received ground speed reading: " << reading_gs.groundSpeed() << std::endl;
+                        std::cout << "Received ground speed reading: [" 
+                                  << reading_gs.vx() << ", "
+                                  << reading_gs.vy() << ", "
+                                  << reading_gs.vz() << "]" << std::endl;
                     }
                 }
             }; // end of Reading_GroundSpeed
