@@ -30,6 +30,9 @@
 #include "dynamics_vehicle.h"
 #include <math.h>
 
+#include <cmath>
+#include <Eigen/Dense>
+
 int32_t main(int32_t argc, char **argv) 
 { 
     bool flag_ini_position{false};
@@ -78,6 +81,9 @@ int32_t main(int32_t argc, char **argv)
             double omega_body[3]{};
             double v_body{16.0};
             float heading{0.0};
+            Eigen::Vector3d v_ned; 
+            Eigen::Vector3d v_body_3d; 
+            Eigen::Vector3d Eulerangle; 
         }All_vars;
 
         All_vars var;
@@ -168,6 +174,21 @@ int32_t main(int32_t argc, char **argv)
                     opendlv::proxy::GroundSpeedReading reading_gs = cluon::extractMessage<opendlv::proxy::GroundSpeedReading>(std::move(env));
                     // TODO: verify the following line (regarding frames and potential need of conversion
                     var.v_body = reading_gs.groundSpeed();
+
+                    double phi= 0;
+                    double theta= 0;
+                    double psi= -var.heading;  //down: z 
+                //rotation matrix of body frame relating to inertial frame:
+                    Eigen::Matrix3d R_rot; 
+                    R_rot << cos(theta)*cos(psi), sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi), cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi), 
+                           cos(theta)*sin(psi), sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi), cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi), 
+                          -sin(theta), sin(phi)*cos(theta), cos(phi)*cos(theta); 
+                    //var.v_ned; 
+                    //Eigen::Vector3d v_body;  
+                    var.v_body_3d = R_rot.adjoint() * var.v_ned;  //front x, right y, down z
+                    var.v_body_3d(1) =  -var.v_body_3d(1);   //left y
+                    var.v_body_3d(2) =  -var.v_body_3d(2);   //up z
+
                     if (VERBOSE)
                     {
                         std::cout << "Received ground speed reading: " << reading_gs.groundSpeed() << std::endl;
@@ -199,8 +220,8 @@ int32_t main(int32_t argc, char **argv)
                     od4_2->send(msg, cluon::time::now(), argCAN_ID);
 
                     opendlv::sim::KinematicState msg_2;
-                    msg_2.vx((float)var.v_body);
-                    msg_2.vy(0.0);
+                    msg_2.vx((float)var.v_body_3d(0));
+                    msg_2.vy((float)var.v_body_3d(1));
                     msg_2.yawRate((float)var.omega_body[2]);
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
@@ -208,8 +229,8 @@ int32_t main(int32_t argc, char **argv)
                     od4_2->send(msg_2, cluon::time::now(), argCAN_ID);
 
                     internal::nomState msg_3;
-                    msg_3.xp_dot(var.v_body);
-                    msg_3.yp_dot(0);
+                    msg_3.xp_dot((float)var.v_body_3d(0));
+                    msg_3.yp_dot((float)var.v_body_3d(1));
                     msg_3.psi_dot(var.omega_body[2]);
                     msg_3.epsi(psi);
                     msg_3.ey(ey);
@@ -267,8 +288,8 @@ int32_t main(int32_t argc, char **argv)
                     //od4_2->send(msg, cluon::time::now(), argCAN_ID);
 
                     opendlv::sim::KinematicState msg_2;
-                    msg_2.vx((float)var.v_body);
-                    msg_2.vy(0.0);
+                    msg_2.vx((float)var.v_body_3d(0));
+                    msg_2.vy((float)var.v_body_3d(1));
                     msg_2.yawRate((float)var.omega_body[2]);
                     msg_2.vz(0.0);
                     msg_2.rollRate(0.0);
@@ -276,8 +297,8 @@ int32_t main(int32_t argc, char **argv)
                     //od4_2->send(msg_2, cluon::time::now(), argCAN_ID);
 
                     internal::nomState msg_3;
-                    msg_3.xp_dot(var.v_body);
-                    msg_3.yp_dot(0);
+                    msg_3.xp_dot((float)var.v_body_3d(0));
+                    msg_3.yp_dot((float)var.v_body_3d(1));
                     msg_3.psi_dot(var.omega_body[2]);
                     msg_3.epsi(psi);
                     msg_3.ey(ey);
