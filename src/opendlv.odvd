@@ -23,6 +23,10 @@
  * local micro-services, i.e. replacing global variables.
  * All new messages have separated IDs as 30XX.
  */
+ 
+/* 2019 Mar. Modification by Yue Kang
+ * Merged the Rhino.odvd (CAN messages)
+ */
 
 message opendlv.sim.Frame [id = 1001] {
   float x [id = 1];
@@ -393,4 +397,71 @@ message internal.nomState [id = 3002] {
   double s [id = 6];
   double steer [id = 7];
   double acc [id = 8];
+}
+
+// The following messages are merged from Rhino.odvd on 20 Mar 2019
+
+// Legacy message to control Rhino.
+message opendlv.proxy.ActuationRequest [id = 160] {
+  float acceleration [id = 1];
+  float steering [id = 2];
+  bool isValid [id = 3];
+}
+
+message opendlv.proxy.rhino.ManualControl [id = 191] {
+    double accelerationPedalPosition [id = 1];
+    double brakePedalPosition [id = 2];
+    double torsionBarTorque [id = 3];
+}
+
+message opendlv.proxy.rhino.AccelerationRequest [id = 192] {
+    bool enableRequest [id = 1];
+    double accelerationPedalPosition [id = 2];
+}
+
+message opendlv.proxy.rhino.BrakeRequest [id = 193] {
+    bool enableRequest [id = 1];
+    double brake [id = 2];
+}
+
+message opendlv.proxy.rhino.SteeringRequest [id = 194] {
+    bool enableRequest [id = 1];
+    double steeringRoadWheelAngle [id = 2];
+    double steeringDeltaTorque [id = 3];
+}
+
+message opendlv.proxy.rhino.Axles [id = 195] {
+    double loadAxle11 [id = 1];
+    double loadAxle12 [id = 2];
+    double loadAxle13 [id = 3];
+}
+
+message opendlv.proxy.rhino.Propulsion [id = 196] {
+    double propulsionShaftVehicleSpeed [id = 1];
+}
+
+message opendlv.proxy.rhino.VehicleState [id = 197] {
+    double accelerationX [id = 1];
+    double accelerationY [id = 2];
+    double yawRate [id = 3];
+}
+
+message opendlv.proxy.rhino.Wheels [id = 198] {
+    double speedWheel111 [id = 1];
+    double speedWheel112 [id = 2];
+    double speedWheel121 [id = 3];
+    double speedWheel122 [id = 4];
+    double speedWheel131 [id = 5];
+    double speedWheel132 [id = 6];
+}
+
+message opendlv.proxy.rhino.Steering [id = 199] {
+    double roadWheelAngle [id = 1];
+    double steeringWheelAngle [id = 2];
+}
+
+message opendlv.proxy.rhino.Driveline [id = 200] {
+    float engineTorque [id = 1];
+    float engineSpeed [id = 2];
+    int8 currentGear [id = 3];
 }
