@@ -28,7 +28,8 @@ services:
 
     dev-gps-ncom:
         container_name: dev-gps-ncom
-        image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.16
+        #image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.16
+        image: adam2092/opendlv-device-gps-ncom-multi:v0.0.1 
         cpuset: "1"
         restart: always
         network_mode: "host"
