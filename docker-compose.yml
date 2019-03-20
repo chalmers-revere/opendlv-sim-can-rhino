@@ -26,6 +26,17 @@ services:
 #
 ######################################################################################
 
+    relay-downsample-101-100:
+        container_name: relay-downsample-101-100
+        image: chrberger/cluon-relay-multi:v0.0.4
+        cpuset: "0"
+        restart: always
+        network_mode: "host"
+        cap_add:
+        - SYS_NICE
+        entrypoint: ""
+        command: "nice -n -7 /usr/bin/cluon-relay --cid-from=101 --cid-to=100 --downsample=19:10,49:1,1046:10"
+
     dev-gps-ncom:
         container_name: dev-gps-ncom
         #image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.16
@@ -60,7 +71,7 @@ services:
         - ~/recordings:/opt/vehicle-view/recordings
         - /var/run/docker.sock:/var/run/docker.sock
         environment:
-        - OD4SESSION_CID=101
+        - OD4SESSION_CID=100
         - PLAYBACK_OD4SESSION_CID=200
         - OPENDLV_VEHICLE_VIEW_PLATFORM=Rhino        
         ports:
