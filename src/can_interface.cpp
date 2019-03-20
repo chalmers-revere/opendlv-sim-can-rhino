@@ -88,8 +88,8 @@ int32_t main(int32_t argc, char **argv)
 
         All_vars var;
         var.v_ned << 0, 0, 0;
-        v_body_3d << 0, 0, 0;
-        Eulerangle << 0, 0, 0;
+        var.v_body_3d << 0, 0, 0;
+        var.Eulerangle << 0, 0, 0;
 
         while (od4_2->isRunning())
         {
