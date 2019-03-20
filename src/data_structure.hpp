@@ -215,14 +215,14 @@ public:
     // Unlisted global variables
     bool dead{false}, dead_pre{false};
     FB_state state_brakeini{};
-    Global_variables()
+    Global_variables(double vel)
     {
         scale = 0; 
         u_global << 0.0, 0.0;
         scale_tracking = 0;
         u_tracking_global << 0.0, 0.0;
         scale_record = 0;
-        v_ref = 16.0;
+        v_ref = vel;
         t_nom = 0.0;
         Eigen::Vector3d tra_com_pre, tra_com_dot_pre, tra_com_ddot_pre;
         tra_com_pre << 0.0, 0.0, 0.0;
@@ -241,7 +241,7 @@ public:
             beta_2.push_back(false);
         }
     }
-    void generate_init_ob()
+    void generate_init_ob(double pos_ycenter_ob)
     {
         using namespace std;
         srand((int)time(NULL));
@@ -252,7 +252,8 @@ public:
             {
                 curr.radius = 1.5 + 0.5 * (double)rand() / RAND_MAX;
                 curr.pos_x = 50 + 110 * (double)rand() / RAND_MAX;
-                curr.pos_y = -1.2 + 2.4 * (double)rand() / RAND_MAX;  
+                //curr.pos_y = -1.2 + 2.4 * (double)rand() / RAND_MAX;  
+                curr.pos_y = pos_ycenter_ob + 2.4 * (double)rand() / RAND_MAX;  
 
 		//tune 20190110:
 		/*curr.radius = 2.1; 

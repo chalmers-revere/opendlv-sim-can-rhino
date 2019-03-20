@@ -54,6 +54,20 @@ int32_t main(int32_t argc, char *argv[])
     }
     else FREQ = std::stoi(commandlineArguments["freq"]);
 
+    double k_scale_steer = 1.0;
+    if (0 == commandlineArguments.count("k_scale_steer"))
+    {
+        std::cerr << "WARNING: No k_scale_steer assigned, using 50 by default ('--k_scale_steer=1.0')." << std::endl;
+    }
+    else k_scale_steer = std::stoi(commandlineArguments["k_scale_steer"]);
+    double k_scale_acc = 1.0;
+    if (0 == commandlineArguments.count("k_scale_acc"))
+    {
+        std::cerr << "WARNING: No k_scale_acc assigned, using 50 by default ('--k_scale_acc=1.0')." << std::endl;
+    }
+    else k_scale_acc = std::stoi(commandlineArguments["k_scale_acc"]);
+
+
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
 
@@ -145,7 +159,8 @@ int32_t main(int32_t argc, char *argv[])
     }
     while (od4.isRunning() && od4_2.isRunning())
     {
-        auto sendMsg{[&od4_2, &nom_state, &real_state, &nom_u, &VERBOSE, &flag_nomu, &flag_nomstate, &flag_actstate]() -> bool
+        auto sendMsg{[&od4_2, &nom_state, &real_state, &nom_u, &VERBOSE, &flag_nomu, &flag_nomstate, &flag_actstate, 
+                      &k_scale_steer, &k_scale_acc]() -> bool
             {
                 Eigen::Vector2d u;
                 if (nom_state.xp_dot <= 1e-1)
@@ -234,7 +249,8 @@ int32_t main(int32_t argc, char *argv[])
                     K_state << 0.0000,    1.6340,    3.6865,   26.1752,    5.4772,    0.0000,
                                4.5776,   -0.0000,    0.0000,   -0.0000,   -0.0000,    5.4772;  //lqr
                     Eigen::Matrix2d k_scale;
-                    k_scale << 1, 0, 0, 1; 
+                    //k_scale << 1, 0, 0, 1; 
+                    k_scale << k_scale_steer, 0, 0, k_scale_acc;
                     u = -k_scale*K_state * xi_err + nom_u;  //more stable 
                     //u = -k_scale*K_state * xi_err;            
                                         
