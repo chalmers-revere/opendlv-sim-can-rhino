@@ -83,7 +83,7 @@ int32_t main(int32_t argc, char *argv[])
     }
 
     cluon::OD4Session od4(CID, [&nom_state, &VERBOSE, &flag_ini, &gl](cluon::data::Envelope &&env) noexcept {
-        std::cout << "Received message:" << env.dataType() << std::endl;
+        // std::cout << "Received message:" << env.dataType() << std::endl;
 
         if (env.dataType() == internal::nomState::ID())
         {
