@@ -140,6 +140,25 @@ int32_t main(int32_t argc, char **argv)
                 }
             }; // end of Reading_AngularVelocity
 
+            auto Reading_YawRate{[&var, &VERBOSE, &argCAN_ID](cluon::data::Envelope &&env)
+                {
+                    if (env.senderStamp() != argCAN_ID)
+                    {
+                        return;
+                    }
+                    opendlv::proxy::rhino::VehicleState reading_yr = cluon::extractMessage<opendlv::proxy::rhino::VehicleState>(std::move(env));
+
+                    // var.omega_body[0] = reading_ang_vel.angularVelocityX();
+                    // var.omega_body[1] = reading_ang_vel.angularVelocityY();
+                    var.omega_body[2] = reading_yr.yawRate();
+                    if (VERBOSE)
+                    {
+                        std::cout << "Received yawRate reading (from CAN): " 
+                            << reading_yr.yawRate() << std::endl;
+                    }
+                }
+            }; // end of Reading_YawRate
+
             auto Reading_GroundSpeed{[&var, &VERBOSE, &argCAN_ID](cluon::data::Envelope &&env)
                 {
                     if (env.senderStamp() != argCAN_ID)
@@ -161,6 +180,7 @@ int32_t main(int32_t argc, char **argv)
                 od4_2->dataTrigger(opendlv::logic::sensation::Geolocation::ID(), Reading_GPS);
                 od4_2->dataTrigger(opendlv::proxy::AngularVelocityReading::ID(), Reading_AngularVelocity);
                 od4_2->dataTrigger(opendlv::proxy::GroundSpeedReading::ID(), Reading_GroundSpeed);
+                od4_2->dataTrigger(opendlv::proxy::rhino::VehicleState::ID(), Reading_YawRate);
             }
 
             auto Output{[&var, &VERBOSE, od4_2, &argCAN_ID]() -> bool
