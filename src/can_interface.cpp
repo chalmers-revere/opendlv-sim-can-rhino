@@ -136,9 +136,9 @@ int32_t main(int32_t argc, char **argv)
                         return;
                     }
                     opendlv::proxy::AngularVelocityReading reading_ang_vel = cluon::extractMessage<opendlv::proxy::AngularVelocityReading>(std::move(env));
-                    var.omega_body[0] = reading_ang_vel.angularVelocityX();
+                    var.omega_body[0] = reading_ang_vel.angularVelocityX();  
                     var.omega_body[1] = reading_ang_vel.angularVelocityY();
-                    var.omega_body[2] = reading_ang_vel.angularVelocityZ();
+                    var.omega_body[2] = -reading_ang_vel.angularVelocityZ();  //z axis: upward
                     if (VERBOSE)
                     {
                         std::cout << "Received angular velocity reading: [" 
@@ -149,7 +149,7 @@ int32_t main(int32_t argc, char **argv)
                 }
             }; // end of Reading_AngularVelocity
 
-            auto Reading_YawRate{[&var, &VERBOSE, &argCAN_ID](cluon::data::Envelope &&env)
+            /*auto Reading_YawRate{[&var, &VERBOSE, &argCAN_ID](cluon::data::Envelope &&env)
                 {
                     if (env.senderStamp() != argCAN_ID)
                     {
@@ -166,7 +166,7 @@ int32_t main(int32_t argc, char **argv)
                             << reading_yr.yawRate() << std::endl;
                     }
                 }
-            }; // end of Reading_YawRate
+            }; // end of Reading_YawRate*/
 
             auto Reading_GroundSpeed{[&var, &VERBOSE, &argGPS_ID](cluon::data::Envelope &&env)
                 {
@@ -178,11 +178,11 @@ int32_t main(int32_t argc, char **argv)
                     // var.v_body = reading_gs.groundSpeed();
                     opendlv::logic::sensation::Equilibrioception reading_gs = cluon::extractMessage<opendlv::logic::sensation::Equilibrioception>(std::move(env));
 
-                    var.v_ned << reading_gs.vx(), reading_gs.vy(), reading_gs.vz();
+                    var.v_ned << reading_gs.vx(), -reading_gs.vy(), reading_gs.vz(); //+should be:  north, east, modified according to the test data
 
                     double phi= 0;
                     double theta= 0;
-                    double psi= -var.heading;  //down: z 
+                    double psi= var.heading;  //down: z 
                 //rotation matrix of body frame relating to inertial frame:
                     Eigen::Matrix3d R_rot; 
                     R_rot << cos(theta)*cos(psi), sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi), cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi), 
@@ -209,7 +209,7 @@ int32_t main(int32_t argc, char **argv)
                 od4_2->dataTrigger(opendlv::logic::sensation::Geolocation::ID(), Reading_GPS);
                 od4_2->dataTrigger(opendlv::proxy::AngularVelocityReading::ID(), Reading_AngularVelocity);
                 od4_2->dataTrigger(opendlv::proxy::GroundSpeedReading::ID(), Reading_GroundSpeed);
-                od4_2->dataTrigger(opendlv::proxy::rhino::VehicleState::ID(), Reading_YawRate);
+                //od4_2->dataTrigger(opendlv::proxy::rhino::VehicleState::ID(), Reading_YawRate);
             }
 
             auto Output{[&var, &VERBOSE, od4_2, &argCAN_ID]() -> bool
