@@ -25,6 +25,7 @@
 
 #include "data_structure.hpp"
 #include "qpOASES/qpOASES.hpp"
+#include "cluon-complete.hpp"
 
 using namespace std;
 
@@ -36,6 +37,8 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     double epsi = u.epsi, ey = u.ey, s = u.s; 
     double steer = u.steer, acc = u.acc;
 
+    const auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+    auto filename = "/tmp/data_safety_certificate" + currentTime + ".txt";
  
 
 
@@ -592,7 +595,8 @@ std::cout << " qp3 is solvable? " << qp_test3.isSolved() << std::endl;
     // each row contains the following data, seperated by tab: 
     // time tra_com(1) tra_com(2)  tra_com_dot(1)  tra_com_dot(2)  tra_com_ddot(1) tra_com_ddot(2)
     // (index above uses Matlab notation)
-    std::ofstream txt("/tmp/data_safety_certificate.txt", std::ios::out | std::ios::app);
+
+    std::ofstream txt(filename, std::ios::out | std::ios::app);
     if (txt.is_open())
     {
         txt  << '\t' 

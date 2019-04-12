@@ -72,6 +72,9 @@ int32_t main(int32_t argc, char **argv)
         std::shared_ptr<cluon::OD4Session> od4_2 = std::shared_ptr<cluon::OD4Session>(new cluon::OD4Session(argCID));
         /*"od4_2" means "external channel" by default*/
 
+        auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+        auto filename = "/tmp/data_model_state_" + currentTime + ".txt";
+
         typedef struct {
             double init_latitude{0.0};
             double init_longitude{0.0};
@@ -212,7 +215,7 @@ int32_t main(int32_t argc, char **argv)
                 od4_2->dataTrigger(opendlv::proxy::rhino::VehicleState::ID(), Reading_YawRate);
             }
 
-            auto Output{[&var, &VERBOSE, od4_2, &argCAN_ID]() -> bool
+            auto Output{[&var, &VERBOSE, od4_2, &argCAN_ID, &filename]() -> bool
                 {
                     opendlv::sim::Frame msg;
                     double psi_ini = var.init_heading + 3.14159265/2; 
@@ -257,7 +260,7 @@ int32_t main(int32_t argc, char **argv)
                         // each row contains the following data, seperated by tab: 
                         // time nomStateMsg(all attributes)
                     {
-                        std::ofstream txt("/tmp/data_model_state.txt", std::ios::out | std::ios::app);
+                        std::ofstream txt(filename, std::ios::out | std::ios::app);
                         if (txt.is_open())
                         {
                                 txt << 0 << '\t'

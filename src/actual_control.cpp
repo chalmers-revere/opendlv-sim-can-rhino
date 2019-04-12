@@ -70,7 +70,8 @@ int32_t main(int32_t argc, char *argv[])
 
     bool const VERBOSE{commandlineArguments.count("verbose") != 0};
 
-
+    auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+    auto fileName = "/tmp/data_msg_actual_u_" + currentTime + ".txt";
 
     FB_state nom_state(16.0, 0, 0, 0, 0, 0, 0, 0);
     if (VERBOSE) 
@@ -160,7 +161,7 @@ int32_t main(int32_t argc, char *argv[])
     while (od4.isRunning() && od4_2.isRunning())
     {
         auto sendMsg{[&od4_2, &nom_state, &real_state, &nom_u, &VERBOSE, &flag_nomu, &flag_nomstate, &flag_actstate, 
-                      &k_scale_steer, &k_scale_acc]() -> bool
+                      &k_scale_steer, &k_scale_acc, &fileName]() -> bool
             {
                 Eigen::Vector2d u;
                 if (nom_state.xp_dot <= 1e-1)
@@ -308,7 +309,7 @@ int32_t main(int32_t argc, char *argv[])
                 //od4_2.send(msgSpeed);
                 //od4_2.send(msgSteering);
 
-                std::ofstream txt2("/tmp/data_msg_actual_u.txt", std::ios::out | std::ios::app);
+                std::ofstream txt2(fileName, std::ios::out | std::ios::app);
                 if (txt2.is_open())
                 {
                     //the clock is not accurate: 

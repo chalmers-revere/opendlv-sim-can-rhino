@@ -42,15 +42,20 @@ int32_t main(int32_t argc, char **argv) {
     if ((0 == commandlineArguments.count("cid")) || (0 == commandlineArguments.count("freq")) || (0 == commandlineArguments.count("cid2") )) {
         std::cerr << argv[0] << " simulates can-rhino." << std::endl;
         std::cerr << "Usage:   " << argv[0] << " --cid=<OpenDaVINCI session> --cid2=<Second OD4Session> --freq=<Frequency> [--id=<Identifier in case of simulated units>] [--verbose]" << std::endl;
-        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--nominal] [--on_vehicle] [--verbose] [--save_file=/tmp/data_msg_nom_state.txt]" << std::endl;
+        std::cerr << "Example: " << argv[0] << " --cid=113 --cid2=114 --freq=50 [--nominal] [--on_vehicle] [--verbose]" << std::endl;
         std::cerr << "(The second OD4Session is for vehicle state overriding from external source.)" << std::endl;
         retCode = 1;
     } else {
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
         const int16_t FREQ = static_cast<uint16_t>(std::stoi(commandlineArguments["freq"]));
-        const bool ifSave{commandlineArguments.count("save_file") != 0};
-        auto filename{ifSave ? commandlineArguments["save_file"] : ""};
+        // const bool ifSave{commandlineArguments.count("save_file") != 0};
+        const bool ifSave{true};
+        // auto filename{ifSave ? commandlineArguments["save_file"] : ""};
+        const auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+        auto filename = "/tmp/data_nominal_states_" + currentTime + ".txt";
+
+
 
         const bool ifNominal{commandlineArguments.count("nominal") != 0};
         m_dynamics.ifNominal = ifNominal; 

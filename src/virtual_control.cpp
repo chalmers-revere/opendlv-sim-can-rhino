@@ -74,6 +74,11 @@ int32_t main(int32_t argc, char *argv[])
     if (VERBOSE) 
         std::cout << "Nom_state initialised." << std::endl;
 
+    auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+    auto filename = "/tmp/data_traj_ob_" + currentTime + ".txt";
+    auto filename2 = "/tmp/data_msg_nom_u_" + currentTime + ".txt";
+    auto filename3 = "/tmp/data_ref_traj_" + currentTime + ".txt";
+
     Global_variables gl(v_ref);
     gl.no_ob = no_obs;
     gl.isVerbose = VERBOSE;
@@ -144,7 +149,7 @@ int32_t main(int32_t argc, char *argv[])
     }
     while (od4.isRunning()) //should run after initialization 
     {
-        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE, &FREQ, &flag_ini]() -> bool
+        auto sendMsg{[&od4, &nom_state, &gl, &VERBOSE, &FREQ, &flag_ini, &filename, &filename2, &filename3]() -> bool
             {
                 // update position of obstacles
                 gl.ob_traj(false); 
@@ -191,7 +196,7 @@ int32_t main(int32_t argc, char *argv[])
                 // Data saving into txt file
                 // each row contains the following data, seperated by tab
                 // time msgNomU.acc  msgNomU.steer
-                std::ofstream txt2("/tmp/data_msg_nom_u.txt", std::ios::out | std::ios::app);
+                std::ofstream txt2(filename2, std::ios::out | std::ios::app);
                 if (txt2.is_open())
                 {
                     txt2 << ((double)clock())/CLOCKS_PER_SEC << '\t' << msgNomU.acc() << '\t' << msgNomU.steer() << '\n';
@@ -199,7 +204,7 @@ int32_t main(int32_t argc, char *argv[])
                 }
                 else std::cerr << "WARNING: Unable to save data into the file <data_msg_nom_u.txt>." << std::endl;
 
-                std::ofstream txt3("/tmp/data_ref_traj.txt", std::ios::out | std::ios::app);
+                std::ofstream txt3(filename3, std::ios::out | std::ios::app);
                 if (txt3.is_open())
                 {
                     txt3 << gl.trajd[0](0) << '\t' << gl.trajd[0](1)  << '\t' << gl.trajd[0](2)   << '\t' << gl.trajd[1](0) << '\t' << gl.trajd[1](1)  << '\t' << gl.trajd[1](2) << '\n';
@@ -207,7 +212,7 @@ int32_t main(int32_t argc, char *argv[])
                 }
                 else std::cerr << "WARNING: Unable to save data into the file <data_ref_traj.txt>." << std::endl;
 
-                std::ofstream txt("/tmp/data_traj_ob.txt", std::ios::out | std::ios::app );
+                std::ofstream txt(filename, std::ios::out | std::ios::app );
                 if (txt.is_open())
                 {
                 for (uint8_t i = 0; i < gl.no_ob; ++i){

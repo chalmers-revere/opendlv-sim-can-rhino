@@ -26,21 +26,9 @@ services:
 #
 ######################################################################################
 
-    relay-downsample-101-100:
-        container_name: relay-downsample-101-100
-        image: chrberger/cluon-relay-multi:v0.0.4
-        cpuset: "0"
-        restart: always
-        network_mode: "host"
-        cap_add:
-        - SYS_NICE
-        entrypoint: ""
-        command: "nice -n -7 /usr/bin/cluon-relay --cid-from=101 --cid-to=100 --downsample=19:10,49:1,1046:10"
-
     dev-gps-ncom:
         container_name: dev-gps-ncom
-        #image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.16
-        image: adam2092/opendlv-device-gps-ncom-multi:v0.0.1 
+        image: chalmersrevere/opendlv-device-gps-ncom-multi:v0.0.16
         cpuset: "1"
         restart: always
         network_mode: "host"
@@ -71,7 +59,7 @@ services:
         - ~/recordings:/opt/vehicle-view/recordings
         - /var/run/docker.sock:/var/run/docker.sock
         environment:
-        - OD4SESSION_CID=100
+        - OD4SESSION_CID=101
         - PLAYBACK_OD4SESSION_CID=200
         - OPENDLV_VEHICLE_VIEW_PLATFORM=Rhino        
         ports:
@@ -88,32 +76,32 @@ services:
 ######################################################################################
 
     can_interface:
-        image: adam2092/rhino-sim-test:v0.0.11
+        image: adam2092/rhino-sim-test:v0.0.10
         network_mode: "host"
         depends_on:
         - opendlv-cangw-rhino
         volumes:
         - /tmp:/tmp/
-        command: "can_interface --cid=101 --freq=150 --gps-id=0 --can-id=1"
+        command: "can_interface --cid=101 --freq=150 --gps-id=0 --can-id=1 "
 
     nominal_dynamics:
-        image: adam2092/rhino-sim-test:v0.0.11
+        image: adam2092/rhino-sim-test:v0.0.10
         network_mode: "host"
         volumes:
         - /tmp:/tmp
-        command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=101 --nominal --freq=150 --save_file=/tmp/data_nominal_states.txt"
+        command: "opendlv-sim-can-rhino-2 --cid=113 --cid2=101 --nominal --freq=150 --save_file=/tmp/data_nominal_states.txt  "
 
     virtual_control:
-        image: adam2092/rhino-sim-test:v0.0.11
+        image: adam2092/rhino-sim-test:v0.0.10
         depends_on:
         - nominal_dynamics
         network_mode: "host"
         volumes:
         - /tmp:/tmp
-        command: "virtual_control --cid=113 --freq=150 --v_ref=13  --no_obs=3 --pos_ycenter_ob=-1.2" 
+        command: "virtual_control --cid=113 --freq=150 --v_ref=13  --no_obs=3 --pos_ycenter_ob=-1.2 " 
 
     actual_control:
-        image: adam2092/rhino-sim-test:v0.0.11
+        image: adam2092/rhino-sim-test:v0.0.10
         depends_on:
         - nominal_dynamics
         network_mode: "host"
