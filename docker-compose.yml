@@ -81,7 +81,7 @@ services:
         - ~/recordings:/opt/vehicle-view/recordings
         - /var/run/docker.sock:/var/run/docker.sock
         environment:
-        - OD4SESSION_CID=100
+        - OD4SESSION_CID=101
         - PLAYBACK_OD4SESSION_CID=200
         - OPENDLV_VEHICLE_VIEW_PLATFORM=Rhino        
         ports:
