@@ -37,7 +37,10 @@ Output_safety safety_certificate_complex (FB_state u, Global_variables& gl)
     double epsi = u.epsi, ey = u.ey, s = u.s; 
     double steer = u.steer, acc = u.acc;
 
-    const auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+    
+    // const auto currentTime = std::to_string(cluon::time::toMicroseconds(cluon::time::now()) / 1000 / 60 ); // resolution to minutes
+    const auto currentTime = gl.currentTime;
+
     auto filename = "/tmp/data_safety_certificate" + currentTime + ".txt";
  
 

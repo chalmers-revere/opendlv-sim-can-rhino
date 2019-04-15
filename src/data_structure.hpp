@@ -215,6 +215,10 @@ public:
     // Unlisted global variables
     bool dead{false}, dead_pre{false};
     FB_state state_brakeini{};
+
+    // For data record in txt form
+    std::string currentTime{""};
+
     Global_variables(double vel)
     {
         scale = 0; 

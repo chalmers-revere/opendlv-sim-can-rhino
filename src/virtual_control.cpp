@@ -83,6 +83,7 @@ int32_t main(int32_t argc, char *argv[])
     gl.no_ob = no_obs;
     gl.isVerbose = VERBOSE;
     gl.generate_init_ob(pos_ycenter_ob);
+    gl.currentTime = currentTime;
 
     // Data saving into txt file
     // number of rows = number of obstacles
