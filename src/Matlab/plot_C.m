@@ -1,10 +1,27 @@
-%load the data 
-load  data_nominal_states.txt;
-load data_msg_nom_u.txt;
-load  data_model_state.txt;
-load data_msg_actual_u.txt;
-load data_ref_traj.txt;
- 
+%% load the data, modified on 20190919
+
+% load  data_nominal_states.txt;
+% load data_msg_nom_u.txt;
+% load  data_model_state.txt;
+% load data_msg_actual_u.txt;
+% load data_ref_traj.txt;
+
+clear all;
+
+filename=dir('data_nominal_states_*.txt');
+data_nominal_states = load(filename.name); 
+
+filename=dir('data_msg_nom_u_*.txt');
+data_msg_nom_u = load(filename.name); 
+
+filename=dir('data_model_state_*.txt');
+data_model_state = load(filename.name); 
+
+filename=dir('data_msg_actual_u_*.txt');
+data_msg_actual_u = load(filename.name); 
+
+filename=dir('data_ref_traj_*.txt');
+data_ref_traj = load(filename.name); 
 
 u_ctrl = data_msg_nom_u(:,2:3); %nominal 
 u_actual = data_msg_actual_u(:,2:3);  %actual 
@@ -60,6 +77,8 @@ P_cente = P_sens;
 
  load data_traj_ob.txt;
 %  traj_ob_seris = data_traj_ob; 
+filename=dir('data_traj_ob_*.txt');
+data_traj_ob = load(filename.name); 
  
 traj_ob_seris = data_traj_ob;
 %0815, traj_ob_seris: 2*n-by-no_ob
