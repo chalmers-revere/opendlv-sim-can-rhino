@@ -75,7 +75,7 @@ P_cente = P_sens;
 % P_cente=reference([3,2],:)';
 %0815, traj_ob_seris: 2*n-by-no_ob
 
- load data_traj_ob.txt;
+%  load data_traj_ob.txt;
 %  traj_ob_seris = data_traj_ob; 
 filename=dir('data_traj_ob_*.txt');
 data_traj_ob = load(filename.name); 
@@ -263,7 +263,10 @@ ylabel('  a_x(m/s^2)');
 ylabel('  steer(rad)');
  xlabel('time(s)');
  
- load data_safety_certificate.txt;
+%  load data_safety_certificate.txt;
+ 
+ filename=dir('data_safety_certificate*.txt');
+data_safety_certificate = load(filename.name); 
  
  An_sidepos = data_safety_certificate(:,1:2);
  bn_sidepos= data_safety_certificate(:,3); 
