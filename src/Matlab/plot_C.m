@@ -6,7 +6,7 @@
 % load data_msg_actual_u.txt;
 % load data_ref_traj.txt;
 
-clear all;
+clear all; close all; clc;
 
 filename=dir('data_nominal_states*.txt');
 data_nominal_states = load(filename.name); 
@@ -35,20 +35,30 @@ t_actual = T_sampl_nom:T_sampl_nom:T_sampl_nom*size(data_model_state,1);
 t_uactual = T_sampl_nom:T_sampl_nom:T_sampl_nom*size(u_actual,1);
 
 figure(1);
-subplot(4,1,1);
+subplot(6,1,1);
 plot(t , y1_nom(:,1), '-.', t_actual,  y1_actual(:,1));
 ylabel('v_x');
 
-subplot(4,1,2);
+subplot(6,1,2);
 plot(t , y1_nom(:,2), '-.', t_actual,  y1_actual(:,2));
 ylabel('v_y');
 
-subplot(4,1,3);
+subplot(6,1,3);
+plot(t , y1_nom(:,3), '-.', t_actual,  y1_actual(:,3));
+ylabel(  '\dot e_\psi'); 
+xlabel('Time');
+
+subplot(6,1,4);
+plot(t , y1_nom(:,4), '-.', t_actual,  y1_actual(:,4));
+ylabel(  ' e_\psi'); 
+xlabel('Time');
+
+subplot(6,1,5);
 plot(t , y1_nom(:,5), '-.', t_actual,  y1_actual(:,5));
 ylabel(  'e_y'); 
 xlabel('Time');
 
-subplot(4,1,4);
+subplot(6,1,6);
 plot(t , y1_nom(:,6), '-.', t_actual,  y1_actual(:,6)); grid; 
 ylabel(  's'); 
 legend('nominal', 'actual');
@@ -57,7 +67,7 @@ xlabel('Time');
 
 
 
-close all;
+% close all;
 
 
 % load sim_data.mat;
@@ -149,7 +159,7 @@ for i=1:len
 end
  
 
-figure(1); 
+figure(1000); 
 %the tube along nominal trajectory: 
 dm = 1.414; %maximum disturbance 
 k1 = 3; 
