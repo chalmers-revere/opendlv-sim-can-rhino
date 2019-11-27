@@ -8,19 +8,19 @@
 
 clear all;
 
-filename=dir('data_nominal_states_*.txt');
+filename=dir('data_nominal_states*.txt');
 data_nominal_states = load(filename.name); 
 
-filename=dir('data_msg_nom_u_*.txt');
+filename=dir('data_msg_nom_u*.txt');
 data_msg_nom_u = load(filename.name); 
 
-filename=dir('data_model_state_*.txt');
+filename=dir('data_model_state*.txt');
 data_model_state = load(filename.name); 
 
-filename=dir('data_msg_actual_u_*.txt');
+filename=dir('data_msg_actual_u*.txt');
 data_msg_actual_u = load(filename.name); 
 
-filename=dir('data_ref_traj_*.txt');
+filename=dir('data_ref_traj*.txt');
 data_ref_traj = load(filename.name); 
 
 u_ctrl = data_msg_nom_u(:,2:3); %nominal 
@@ -77,7 +77,7 @@ P_cente = P_sens;
 
 %  load data_traj_ob.txt;
 %  traj_ob_seris = data_traj_ob; 
-filename=dir('data_traj_ob_*.txt');
+filename=dir('data_traj_ob*.txt');
 data_traj_ob = load(filename.name); 
  
 traj_ob_seris = data_traj_ob;
